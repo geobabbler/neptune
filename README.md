@@ -1,4 +1,4 @@
-# Feed Aggregator App
+# Neptune Feed Aggregator
 
 This project aggregates and processes RSS/Atom feeds listed in an OPML file and generates an aggregated HTML page and an RSS feed.
 
@@ -10,7 +10,7 @@ This project aggregates and processes RSS/Atom feeds listed in an OPML file and 
 ## To Run
 1. Navigate to the project directory:
 ```
-cd my-feed-aggregator-app
+cd neptune
 ```
 
 2. Install dependencies:
