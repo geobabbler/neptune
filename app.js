@@ -29,11 +29,23 @@ if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 // Utility function to fetch and cache feeds
 const fetchAndCacheFeed = async (url, cachePath) => {
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      timeout: 10000, // 10 second timeout
+      headers: {
+        'User-Agent': 'RSS Feed Aggregator/1.0',
+        'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*'
+      },
+      maxRedirects: 5
+    });
     fs.writeFileSync(cachePath, response.data, 'utf8');
     return response.data;
   } catch (error) {
     console.error(`Error fetching feed from ${url}:`, error.message);
+    // If cache exists, return cached data as fallback
+    if (fs.existsSync(cachePath)) {
+      console.log(`Using cached data for ${url}`);
+      return fs.readFileSync(cachePath, 'utf8');
+    }
     return null;
   }
 };
@@ -178,7 +190,7 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
 // Schedule aggregation at the 5th minute of every hour
 schedule.scheduleJob('*/15 * * * *', () => {
   console.log('Scheduled aggregation job started at:', new Date().toLocaleString());
-  aggregateFeeds();
+  aggregateFeeds(false);
 });
 
 // Rebuild method to forcefully regenerate feeds without using cache

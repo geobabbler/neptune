@@ -8,5 +8,9 @@
     <outline text="James Fee" title="James Fee" type="rss" xmlUrl="https://jamesfee.org/feed.xml"/>
     <outline text="Brian Maddox" title="Brian Maddox" type="rss" xmlUrl="https://brian.digitalmaddox.com/blog/?feed=rss2"/>
     <outline text="Esri" title="Esri" type="rss" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog"/>
+    <outline text="Free and Open Source GIS Ramblings" title="Free and Open Source GIS Ramblings" description="Anita Graser's blog about free and open source GIS software" type="rss" version="RSS" htmlUrl="https://anitagraser.com/" xmlUrl="http://anitagraser.com/feed/"/>
+    <outline text="BostonGIS" title="BostonGIS" description="BostonGIS is a community of GIS professionals and enthusiasts in the Boston area." type="rss" version="RSS" htmlUrl="https://www.bostongis.com/blog/" xmlUrl="http://www.bostongis.com/blog/index.php?/feeds/index.rss2"/>
+    <outline text="GeoHipster" title="GeoHipster" description="GeoHipster is a community of GIS professionals and enthusiasts in the Boston area." type="rss" version="RSS" htmlUrl="https://www.geohipster.com/" xmlUrl="https://www.geohipster.com/feed/"/>
+    <outline text="NLT Blog - New Light Technologies" title="NLT Blog - New Light Technologies" description="New Light Technologies is a GIS consulting company that provides custom software solutions to a variety of clients." type="rss" version="RSS" htmlUrl="https://newlighttechnologies.com/blog" xmlUrl="https://newlighttechnologies.com/blog/rss.xml"/>
   </body>
 </opml>
