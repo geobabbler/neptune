@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>Sample Feeds</title>
+  </head>
+  <body>
+    <outline text="geoMusings" title="geoMusings" type="rss" xmlUrl="https://blog.geomusings.com/feed"/>
+    <outline text="James Fee" title="James Fee" type="rss" xmlUrl="https://jamesfee.org/feed.xml"/>
+    <outline text="Brian Maddox" title="Brian Maddox" type="rss" xmlUrl="https://brian.digitalmaddox.com/blog/?feed=rss2"/>
+    <outline text="Esri" title="Esri" type="rss" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog"/>
+  </body>
+</opml>
