@@ -7,6 +7,7 @@ const cheerio = require('cheerio');
 const { Builder } = require('xml2js');
 const schedule = require('node-schedule');
 const ejs = require('ejs');
+const RSS = require('rss');
 
 const app = express();
 const port = 3010;
@@ -87,38 +88,12 @@ const renderFeeds = (rssFeed) => {
                 description: item.description ? item.description[0] : 'No description',
                 link: item.link ? item.link[0] : '#',
                 pubDate: item.pubDate ? item.pubDate[0] : 'Unknown date',
-                source: item.source ? item.source[0] : 'Unknown source'
+                source: item.source ? item.source[0]._ : 'Unknown source'
             }));
 
             resolve(feedItems);
         });
     });
-};
-
-// Generate aggregated RSS feed
-const generateRSSFeed = async (feeds) => {
-    // Flatten all feed items and sort by publication date
-    const allItems = feeds.flatMap(feed =>
-        feed.items.map(item => {
-            const pubDate = item.original.pubDate ? 
-                new Date(item.original.pubDate[0]).toUTCString() : 
-                new Date(0).toUTCString();
-            
-            return {
-                title: item.title,
-                description: item.description || 'No description available',
-                link: item.link || 'http://localhost:3000',
-                pubDate: pubDate,
-                source: item.source,
-            };
-        })
-    ).sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-
-    // Generate RSS using EJS template
-    return await ejs.renderFile(
-        path.join(__dirname, 'views', 'rss.ejs'),
-        { items: allItems }
-    );
 };
 
 // Main aggregation function
@@ -142,27 +117,13 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
 
       if (feedData) {
         const filteredData = filterFeedContent(feedData);
-
         const parsedFeed = await xml2js.parseStringPromise(filteredData);
-        const channel = parsedFeed.rss.channel[0];
-        const feedTitle = channel.title[0];
-
-        const feedItems = channel.item
-          .filter((item) => {
-            if (!lastRefreshTime) return true;
-            const pubDate = item.pubDate ? new Date(item.pubDate[0]) : null;
-            return pubDate && pubDate > lastRefreshTime;
-          })
-          .map((item) => ({
-            title: item.title[0],
-            description: item.description ? item.description[0] : '',
-            link: item.link ? item.link[0] : 'http://localhost:3000',
-            source: feedTitle,
-            original: item,
-          }));
-
-        if (feedItems.length > 0) {
-          aggregatedFeeds.push({ title: feedTitle, items: feedItems });
+        
+        // Determine feed type and extract items
+        const feedInfo = parseFeedItems(parsedFeed);
+        
+        if (feedInfo && feedInfo.items.length > 0) {
+          aggregatedFeeds.push(feedInfo);
         }
       }
     }
@@ -185,6 +146,121 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
   } catch (error) {
     console.error('Error during aggregation:', error);
   }
+};
+
+// Helper function to parse both RSS and Atom feeds
+const parseFeedItems = (parsedFeed) => {
+  try {
+    // Check if it's an Atom feed
+    if (parsedFeed.feed) {
+      const feed = parsedFeed.feed;
+      const feedTitle = feed.title ? feed.title[0]._ || feed.title[0] : 'Untitled Feed';
+      const items = feed.entry ? feed.entry.map(entry => ({
+        title: entry.title ? entry.title[0]._ || entry.title[0] : 'Untitled',
+        description: entry.content ? entry.content[0]._ || entry.content[0] : 
+                    entry.summary ? entry.summary[0]._ || entry.summary[0] : '',
+        link: entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '',
+        pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
+        source: feedTitle,
+        original: entry
+      })) : [];
+      return { title: feedTitle, items };
+    }
+    
+    // Handle RSS feed
+    if (parsedFeed.rss && parsedFeed.rss.channel) {
+      const channel = parsedFeed.rss.channel[0];
+      const feedTitle = channel.title[0];
+
+      const items = channel.item ? channel.item.map(item => ({
+        title: item.title ? item.title[0] : 'Untitled',
+        description: item.description ? item.description[0] : '',
+        link: item.link ? item.link[0] : '',
+        pubDate: item.pubDate ? item.pubDate[0] : 
+                item.date ? item.date[0] : new Date().toUTCString(),
+        source: feedTitle,
+        original: item
+      })) : [];
+
+      return { title: feedTitle, items };
+    }
+
+    // Handle RDF (RSS 1.0) feed
+    if (parsedFeed['rdf:RDF']) {
+      const rdf = parsedFeed['rdf:RDF'];
+      const channel = rdf.channel[0];
+      const feedTitle = channel.title[0];
+
+      const items = rdf.item ? rdf.item.map(item => ({
+        title: item.title ? item.title[0] : 'Untitled',
+        description: item.description ? item.description[0] : '',
+        link: item.link ? item.link[0] : '',
+        pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
+        source: feedTitle,
+        original: item
+      })) : [];
+
+      return { title: feedTitle, items };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error parsing feed:', error);
+    return null;
+  }
+};
+
+// Generate aggregated RSS feed
+const generateRSSFeed = (feeds) => {
+  const builder = new Builder();
+  
+  // Flatten all items and remove duplicates based on link
+  const allItems = feeds.flatMap(feed => feed.items);
+  const uniqueItems = allItems.filter((item, index, self) =>
+    index === self.findIndex((t) => t.link === item.link)
+  );
+  
+  // Sort by publication date (newest first)
+  uniqueItems.sort((a, b) => {
+    const dateA = a.original.pubDate ? new Date(a.original.pubDate[0]) : new Date(0);
+    const dateB = b.original.pubDate ? new Date(b.original.pubDate[0]) : new Date(0);
+    return dateB - dateA;
+  });
+
+  const rss = {
+    rss: {
+      $: {
+        version: '2.0',
+        'xmlns:atom': 'http://www.w3.org/2005/Atom'
+      },
+      channel: [{
+        title: 'Aggregated GIS Feed',
+        description: 'Aggregated feed of GIS-related content',
+        link: 'http://localhost:3000',
+        'atom:link': {
+          $: {
+            href: 'http://localhost:3000/feed',
+            rel: 'self',
+            type: 'application/rss+xml'
+          }
+        },
+        lastBuildDate: new Date().toUTCString(),
+        item: uniqueItems.map(item => ({
+          title: item.title,
+          description: item.description,
+          link: item.link,
+          pubDate: item.pubDate,
+          source: {
+            _: item.source,
+            $: {
+              url: item.link
+            }
+          }
+        }))
+      }]
+    }
+  };
+  return builder.buildObject(rss);
 };
 
 // Schedule aggregation at the 5th minute of every hour
