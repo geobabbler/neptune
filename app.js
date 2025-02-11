@@ -91,6 +91,13 @@ const renderFeeds = (rssFeed) => {
                 source: item.source ? item.source[0]._ : 'Unknown source'
             }));
 
+            // Sort items by publication date (newest first)
+            feedItems.sort((a, b) => {
+                const dateA = new Date(a.pubDate);
+                const dateB = new Date(b.pubDate);
+                return dateB - dateA;
+            });
+
             resolve(feedItems);
         });
     });
@@ -211,56 +218,34 @@ const parseFeedItems = (parsedFeed) => {
 };
 
 // Generate aggregated RSS feed
-const generateRSSFeed = (feeds) => {
-  const builder = new Builder();
-  
-  // Flatten all items and remove duplicates based on link
-  const allItems = feeds.flatMap(feed => feed.items);
-  const uniqueItems = allItems.filter((item, index, self) =>
-    index === self.findIndex((t) => t.link === item.link)
-  );
-  
-  // Sort by publication date (newest first)
-  uniqueItems.sort((a, b) => {
-    const dateA = a.original.pubDate ? new Date(a.original.pubDate[0]) : new Date(0);
-    const dateB = b.original.pubDate ? new Date(b.original.pubDate[0]) : new Date(0);
-    return dateB - dateA;
-  });
+const generateRSSFeed = async (feeds) => {
+    // Flatten all items and remove duplicates based on link
+    const allItems = feeds.flatMap(feed => feed.items);
+    const uniqueItems = allItems.filter((item, index, self) =>
+        index === self.findIndex((t) => t.link === item.link)
+    );
+    
+    // Sort by publication date (newest first)
+    uniqueItems.sort((a, b) => {
+        const dateA = a.original.pubDate ? new Date(a.original.pubDate[0]) : new Date(0);
+        const dateB = b.original.pubDate ? new Date(b.original.pubDate[0]) : new Date(0);
+        return dateB - dateA;
+    });
 
-  const rss = {
-    rss: {
-      $: {
-        version: '2.0',
-        'xmlns:atom': 'http://www.w3.org/2005/Atom'
-      },
-      channel: [{
-        title: 'Aggregated GIS Feed',
-        description: 'Aggregated feed of GIS-related content',
-        link: 'http://localhost:3000',
-        'atom:link': {
-          $: {
-            href: 'http://localhost:3000/feed',
-            rel: 'self',
-            type: 'application/rss+xml'
-          }
-        },
-        lastBuildDate: new Date().toUTCString(),
-        item: uniqueItems.map(item => ({
-          title: item.title,
-          description: item.description,
-          link: item.link,
-          pubDate: item.pubDate,
-          source: {
-            _: item.source,
-            $: {
-              url: item.link
-            }
-          }
-        }))
-      }]
-    }
-  };
-  return builder.buildObject(rss);
+    // Format items for the template
+    const items = uniqueItems.map(item => ({
+        title: item.title,
+        description: item.description,
+        link: item.link,
+        pubDate: item.pubDate,
+        source: item.source
+    }));
+
+    // Generate RSS using EJS template
+    return await ejs.renderFile(
+        path.join(__dirname, 'views', 'rss.ejs'),
+        { items }
+    );
 };
 
 // Schedule aggregation at the 5th minute of every hour
