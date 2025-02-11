@@ -267,7 +267,7 @@ app.post('/rebuild', async (req, res) => {
 });
 
 // Endpoint to serve the aggregated HTML
-app.get('/aggregate', async (req, res) => {
+app.get('/view', async (req, res) => {
     try {
         const rssFile = path.join(outputDir, 'aggregated.xml');
         if (!fs.existsSync(rssFile)) {
