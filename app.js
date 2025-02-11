@@ -10,7 +10,7 @@ const ejs = require('ejs');
 const RSS = require('rss');
 
 const app = express();
-const port = 3010;
+const port = 8080;
 
 // Add EJS configuration
 app.set('view engine', 'ejs');
