@@ -17,5 +17,12 @@
 	<outline text="QGIS.org blog" title="QGIS.org blog" description="" type="rss" version="RSS" htmlUrl="https://blog.qgis.org/" xmlUrl="https://blog.qgis.org/feed/"/>
     <outline text="Spatial Leadership with Bill Dollins" title="Spatial Leadership with Bill Dollins" description="" type="rss" version="RSS" htmlUrl="https://billdollins.substack.com/" xmlUrl="https://billdollins.substack.com/feed"/>
 	<outline text="Strategic Geospatial" title="Strategic Geospatial" description="" type="rss" version="RSS" htmlUrl="https://www.strategicgeospatial.com/" xmlUrl="https://www.strategicgeospatial.com/feed"/>
+    <outline text="Development Seed" title="Development Seed" description="" type="rss" version="RSS" htmlUrl="https://developmentseed.org/" xmlUrl="https://developmentseed.org/rss.xml"/>
+    <outline text="Cloud Native Geo" title="Cloud Native Geo" description="" type="rss" version="RSS" htmlUrl="https://cloudnativegeo.org/" xmlUrl="https://cloudnativegeo.org/blog/index.xml"/>
+    <outline text="OSGeo" title="OSGeo" description="" type="rss" version="RSS" htmlUrl="https://www.osgeo.org/" xmlUrl="https://www.osgeo.org/feed/"/>
+    <outline text="Open Geospatial Consortium" title="Open Geospatial Consortium" description="" type="rss" version="RSS" htmlUrl="https://www.ogc.org/" xmlUrl="https://www.ogc.org/feed/"/>
+    <outline text="Map Room Blog" title="Map Room Blog" description="" type="rss" version="RSS" htmlUrl="https://www.maproomblog.com/" xmlUrl="https://www.maproomblog.com/feed/"/>
+    <outline text="North River Geographic" title="North River Geographic" description="" type="rss" version="RSS" htmlUrl="https://www.northrivergeographic.com/" xmlUrl="https://www.northrivergeographic.com/feed/"/>
+    <outline text="GIS Hub" title="GIS Hub" description="" type="rss" version="RSS" htmlUrl="https://blog.gishub.org/" xmlUrl="https://blog.gishub.org/rss.xml"/>
   </body>
 </opml>
