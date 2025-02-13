@@ -13,7 +13,7 @@
     <outline text="GeoHipster" title="GeoHipster" description="GeoHipster is a community of GIS professionals and enthusiasts in the Boston area." type="rss" version="RSS" htmlUrl="https://www.geohipster.com/" xmlUrl="https://www.geohipster.com/feed/"/>
     <outline text="NLT Blog - New Light Technologies" title="NLT Blog - New Light Technologies" description="New Light Technologies is a GIS consulting company that provides custom software solutions to a variety of clients." type="rss" version="RSS" htmlUrl="https://newlighttechnologies.com/blog" xmlUrl="https://newlighttechnologies.com/blog/rss.xml"/>
     <outline text="Paul Ramsey" title="Paul Ramsey" description="" type="rss" version="RSS" htmlUrl="" xmlUrl="http://blog.cleverelephant.ca/atom.xml"/>
-	  <outline text="PostGIS" title="PostGIS" description="" type="rss" version="RSS" htmlUrl="https://postgis.net/" xmlUrl="https://postgis.net/feed/"/>
+	  <outline text="PostGIS" title="PostGIS" description="" type="rss" version="RSS" htmlUrl="https://postgis.net/" xmlUrl="https://postgis.net/feed.xml"/>
 	  <outline text="QGIS.org blog" title="QGIS.org blog" description="" type="rss" version="RSS" htmlUrl="https://blog.qgis.org/" xmlUrl="https://blog.qgis.org/feed/"/>
     <outline text="Spatial Leadership with Bill Dollins" title="Spatial Leadership with Bill Dollins" description="" type="rss" version="RSS" htmlUrl="https://billdollins.substack.com/" xmlUrl="https://billdollins.substack.com/feed"/>
 	  <outline text="Strategic Geospatial" title="Strategic Geospatial" description="" type="rss" version="RSS" htmlUrl="https://www.strategicgeospatial.com/" xmlUrl="https://www.strategicgeospatial.com/feed"/>
