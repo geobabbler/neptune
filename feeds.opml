@@ -24,10 +24,10 @@
     <outline text="Map Room Blog" title="Map Room Blog" description="" type="rss" version="RSS" htmlUrl="https://www.maproomblog.com/" xmlUrl="https://www.maproomblog.com/feed/"/>
     <outline text="North River Geographic" title="North River Geographic" description="" type="rss" version="RSS" htmlUrl="https://www.northrivergeographic.com/" xmlUrl="https://www.northrivergeographic.com/feed/"/>
     <outline text="GIS Hub" title="GIS Hub" description="" type="rss" version="RSS" htmlUrl="https://blog.gishub.org/" xmlUrl="https://blog.gishub.org/rss.xml"/>
-    <outline text="GeomMob" title="GeoMob" description="" type="rss" version="RSS" htmlUrl="https://thegeomob.com/" xmlUrl="https://thegeomob.com/feed.xml">
-    <outline text="OGC" title="Open Geospatial Consortium" description="Stay updated with the latest news from OGC, including developments in geospatial standards, collaborations, and innovations in the geospatial industry." type="rss" version="RSS" htmlUrl="https://ogc.org" xmlUrl="https://www.ogc.org/feed/">
-    <outline text="Mappery" title="Mappery" description="" htmlUrl="https://mappery.org" xmlUrl="https://mappery.org/feed/">
-    <outline text="Markus Neteler Blog" title="Markus Neteler Blog" description="" htmlUrl="https://neteler.org/blog/" xmlUrl="https://neteler.org/feed/">
-    <outline text="Adventures In Mapping" title="Adventures In Mapping" description="" htmlUrl="https://adventuresinmapping.com" xmlUrl="https://adventuresinmapping.com/feed/">
+    <outline text="GeomMob" title="GeoMob" description="" type="rss" version="RSS" htmlUrl="https://thegeomob.com/" xmlUrl="https://thegeomob.com/feed.xml"/>
+    <outline text="OGC" title="Open Geospatial Consortium" description="Stay updated with the latest news from OGC, including developments in geospatial standards, collaborations, and innovations in the geospatial industry." type="rss" version="RSS" htmlUrl="https://ogc.org" xmlUrl="https://www.ogc.org/feed/"/>
+    <outline text="Mappery" title="Mappery" description="" htmlUrl="https://mappery.org" xmlUrl="https://mappery.org/feed/"/>
+    <outline text="Markus Neteler Blog" title="Markus Neteler Blog" description="" htmlUrl="https://neteler.org/blog/" xmlUrl="https://neteler.org/feed/"/>
+    <outline text="Adventures In Mapping" title="Adventures In Mapping" description="" htmlUrl="https://adventuresinmapping.com" xmlUrl="https://adventuresinmapping.com/feed/"/>
   </body>
 </opml>
