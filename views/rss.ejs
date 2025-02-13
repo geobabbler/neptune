@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
     <channel>
-        <title>GeoFeeds Powered by Neptune</title>
+        <title>Aggregated GIS Feed</title>
         <description>Aggregated feed of GIS-related content</description>
         <link>http://localhost:3000</link>
         <atom:link href="http://localhost:3000/feed" rel="self" type="application/rss+xml"/>
@@ -13,6 +13,12 @@
                 <link><%= item.link %></link>
                 <guid><%= item.link %></guid>
                 <pubDate><%= item.pubDate %></pubDate>
+                <% if (item.original.author && typeof item.original.author[0] === 'string') { %>
+                    <author><%= item.original.author[0] %></author>
+                <% } %>
+                <% if (item.original['dc:creator'] && typeof item.original['dc:creator'][0] === 'string') { %>
+                    <dc:creator><%= item.original['dc:creator'][0] %></dc:creator>
+                <% } %>
                 <source url="<%= item.link %>"><%= item.source %></source>
             </item>
         <% }); %>

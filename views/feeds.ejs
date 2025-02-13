@@ -2,17 +2,30 @@
 <html>
 <head>
     <title>GeoFeeds Powered by Neptune</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/styles/main.css">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
     <h1>GeoFeeds Powered by Neptune</h1>
     <% items.forEach(function(item) { %>
         <div class="feed-item">
-            <h2 class="feed-title"><%= item.source %> - <%= item.title %></h2>
-            <p class="feed-meta"><strong>Published:</strong> <%= item.pubDate %></p>
-            <div class="feed-description"><%- item.description %></div>
-            <p><a href="<%= item.link %>" class="read-more" target="_blank">Read more</a></p>
+            <div class="feed-title">
+                <a href="<%= item.link %>" target="_blank"><%= item.title %></a>
+            </div>
+            <div class="feed-meta">
+                <span class="feed-source"><%= item.source %></span>
+                <% if (item.author) { %>
+                    • <span class="feed-author">By <%= item.author %></span>
+                <% } %>
+                • <time><%= new Date(item.pubDate).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }) %></time>
+            </div>
+            <div class="feed-description">
+                <%- item.description %>
+            </div>
         </div>
     <% }); %>
 </body>

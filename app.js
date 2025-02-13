@@ -88,7 +88,9 @@ const renderFeeds = (rssFeed) => {
                 description: item.description ? item.description[0] : 'No description',
                 link: item.link ? item.link[0] : '#',
                 pubDate: item.pubDate ? item.pubDate[0] : 'Unknown date',
-                source: item.source ? item.source[0]._ : 'Unknown source'
+                source: item.source ? item.source[0]._ : 'Unknown source',
+                author: item.author ? item.author[0] : 
+                        item['dc:creator'] ? item['dc:creator'][0] : null
             }));
 
             // Sort items by publication date (newest first)
@@ -169,6 +171,7 @@ const parseFeedItems = (parsedFeed) => {
         link: entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '',
         pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
         source: feedTitle,
+        author: entry.author ? entry.author[0].name ? entry.author[0].name[0] : '' : '',
         original: entry
       })) : [];
       return { title: feedTitle, items };
@@ -186,9 +189,10 @@ const parseFeedItems = (parsedFeed) => {
         pubDate: item.pubDate ? item.pubDate[0] : 
                 item.date ? item.date[0] : new Date().toUTCString(),
         source: feedTitle,
+        //author: item["dc:creator"] ? item["dc:creator"][0] : '',
         original: item
       })) : [];
-
+      //console.log(items[0].author);
       return { title: feedTitle, items };
     }
 
@@ -232,19 +236,10 @@ const generateRSSFeed = async (feeds) => {
         return dateB - dateA;
     });
 
-    // Format items for the template
-    const items = uniqueItems.map(item => ({
-        title: item.title,
-        description: item.description,
-        link: item.link,
-        pubDate: item.pubDate,
-        source: item.source
-    }));
-
     // Generate RSS using EJS template
     return await ejs.renderFile(
         path.join(__dirname, 'views', 'rss.ejs'),
-        { items }
+        { items: uniqueItems }
     );
 };
 
