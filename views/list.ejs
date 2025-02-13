@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aggregated Feed Sources</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <h1>Feed Sources</h1>
+    <div class="feed-list">
+        <% feeds.forEach(function(feed) { %>
+            <div class="feed-source-item">
+                <a href="<%= feed.xmlUrl %>" target="_blank"><%= feed.title %></a>
+            </div>
+        <% }); %>
+    </div>
+</body>
+</html> 

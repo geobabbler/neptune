@@ -300,6 +300,42 @@ app.get('/feed', async (req, res) => {
   await aggregateFeeds(false);
 })();
 
+// Add this function to parse OPML and return feed info
+const getFeedList = async () => {
+    const opmlFile = path.join(__dirname, 'feeds.opml');
+    const opmlContent = fs.readFileSync(opmlFile, 'utf8');
+    const parser = new xml2js.Parser();
+    
+    try {
+        const opmlData = await parser.parseStringPromise(opmlContent);
+        const outlines = opmlData.opml.body[0].outline;
+        return outlines
+            .map(outline => ({
+                title: outline.$.title || outline.$.text,
+                xmlUrl: outline.$.xmlUrl
+            }))
+            .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
+    } catch (error) {
+        console.error('Error parsing OPML:', error);
+        return [];
+    }
+};
+
+// Update the endpoint to handle async function
+app.get('/list', async (req, res) => {
+    try {
+        const feeds = await getFeedList();
+        const html = await ejs.renderFile(
+            path.join(__dirname, 'views', 'list.ejs'),
+            { feeds }
+        );
+        res.send(html);
+    } catch (error) {
+        console.error('Error generating feed list:', error);
+        res.status(500).send('Error generating feed list');
+    }
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Feed aggregator app listening at http://localhost:${port}`);

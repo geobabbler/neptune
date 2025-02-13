@@ -1,0 +1,18 @@
+.feed-list {
+    margin: 20px 0;
+}
+
+.feed-source-item {
+    margin: 10px 0;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.feed-source-item a {
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+.feed-source-item a:hover {
+    text-decoration: underline;
+} 
