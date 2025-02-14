@@ -40,5 +40,6 @@
     <outline text="Justin Cole's Blog" title="Justin Cole's Blog" description="" type="rss" version="RSS" htmlUrl="https://justincolegis.com" xmlUrl="https://justincolegis.com/feed/"/>
     <outline text="MapIdea" title="MapIdea" description="" type="rss" version="RSS" htmlUrl="https://www.mapidea.com/blog" xmlUrl="https://www.mapidea.com/blog?format=rss"/>
     <outline text="Spatial Reserves" title="Spatial Reserves" description="" type="rss" version="RSS" htmlUrl="https://spatialreserves.wordpress.com" xmlUrl="https://spatialreserves.wordpress.com/feed/"/>
+    <outline text="SparkGeo" title="SparkGeo" description="" type="rss" version="RSS" htmlUrl="https://sparkgeo.com" xmlUrl="https://sparkgeo.com/feed/"/>
   </body>
 </opml>
