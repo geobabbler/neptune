@@ -312,7 +312,7 @@ const getFeedList = async () => {
         return outlines
             .map(outline => ({
                 title: outline.$.title || outline.$.text,
-                xmlUrl: outline.$.xmlUrl
+                xmlUrl: outline.$.htmlUrl || outline.$.xmlUrl
             }))
             .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
     } catch (error) {

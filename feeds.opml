@@ -4,15 +4,15 @@
     <title>Sample Feeds</title>
   </head>
   <body>
-    <outline text="geoMusings" title="geoMusings" type="rss" xmlUrl="https://blog.geomusings.com/feed"/>
-    <outline text="James Fee" title="James Fee" type="rss" xmlUrl="https://jamesfee.org/feed.xml"/>
-    <outline text="Brian Maddox" title="Brian Maddox" type="rss" xmlUrl="https://brian.digitalmaddox.com/blog/?feed=rss2"/>
-    <outline text="Esri" title="Esri" type="rss" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog"/>
+    <outline text="geoMusings" title="geoMusings" type="rss" version="RSS" htmlUrl="https://blog.geomusings.com" xmlUrl="https://blog.geomusings.com/feed"/>
+    <outline text="James Fee" title="James Fee" type="rss" version="RSS" htmlUrl="https://jamesfee.org" xmlUrl="https://jamesfee.org/feed.xml"/>
+    <outline text="Brian Maddox" title="Brian Maddox" type="rss" version="RSS" htmlUrl="https://brian.digitalmaddox.com" xmlUrl="https://brian.digitalmaddox.com/blog/?feed=rss2"/>
+    <outline text="Esri" title="Esri" type="rss" version="RSS" htmlUrl="https://www.esri.com" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog"/>
     <outline text="Free and Open Source GIS Ramblings" title="Free and Open Source GIS Ramblings" description="Anita Graser's blog about free and open source GIS software" type="rss" version="RSS" htmlUrl="https://anitagraser.com/" xmlUrl="http://anitagraser.com/feed/"/>
     <outline text="BostonGIS" title="BostonGIS" description="BostonGIS is a community of GIS professionals and enthusiasts in the Boston area." type="rss" version="RSS" htmlUrl="https://www.bostongis.com/blog/" xmlUrl="http://www.bostongis.com/blog/index.php?/feeds/index.rss2"/>
     <outline text="GeoHipster" title="GeoHipster" description="GeoHipster is a community of GIS professionals and enthusiasts in the Boston area." type="rss" version="RSS" htmlUrl="https://www.geohipster.com/" xmlUrl="https://www.geohipster.com/feed/"/>
     <outline text="NLT Blog - New Light Technologies" title="NLT Blog - New Light Technologies" description="New Light Technologies is a GIS consulting company that provides custom software solutions to a variety of clients." type="rss" version="RSS" htmlUrl="https://newlighttechnologies.com/blog" xmlUrl="https://newlighttechnologies.com/blog/rss.xml"/>
-    <outline text="Paul Ramsey" title="Paul Ramsey" description="" type="rss" version="RSS" htmlUrl="" xmlUrl="http://blog.cleverelephant.ca/atom.xml"/>
+    <outline text="Paul Ramsey" title="Paul Ramsey" description="" type="rss" version="RSS" htmlUrl="http://blog.cleverelephant.ca" xmlUrl="http://blog.cleverelephant.ca/atom.xml"/>
 	  <outline text="PostGIS" title="PostGIS" description="" type="rss" version="RSS" htmlUrl="https://postgis.net/" xmlUrl="https://postgis.net/feed.xml"/>
 	  <outline text="QGIS.org blog" title="QGIS.org blog" description="" type="rss" version="RSS" htmlUrl="https://blog.qgis.org/" xmlUrl="https://blog.qgis.org/feed/"/>
     <outline text="Spatial Leadership with Bill Dollins" title="Spatial Leadership with Bill Dollins" description="" type="rss" version="RSS" htmlUrl="https://billdollins.substack.com/" xmlUrl="https://billdollins.substack.com/feed"/>
@@ -25,13 +25,12 @@
     <outline text="North River Geographic" title="North River Geographic" description="" type="rss" version="RSS" htmlUrl="https://www.northrivergeographic.com/" xmlUrl="https://www.northrivergeographic.com/feed/"/>
     <outline text="GIS Hub" title="GIS Hub" description="" type="rss" version="RSS" htmlUrl="https://blog.gishub.org/" xmlUrl="https://blog.gishub.org/rss.xml"/>
     <outline text="GeomMob" title="GeoMob" description="" type="rss" version="RSS" htmlUrl="https://thegeomob.com/" xmlUrl="https://thegeomob.com/feed.xml"/>
-    <outline text="OGC" title="Open Geospatial Consortium" description="Stay updated with the latest news from OGC, including developments in geospatial standards, collaborations, and innovations in the geospatial industry." type="rss" version="RSS" htmlUrl="https://ogc.org" xmlUrl="https://www.ogc.org/feed/"/>
-    <outline text="Mappery" title="Mappery" description="" htmlUrl="https://mappery.org" xmlUrl="https://mappery.org/feed/"/>
-    <outline text="Markus Neteler Blog" title="Markus Neteler Blog" description="" htmlUrl="https://neteler.org/blog/" xmlUrl="https://neteler.org/feed/"/>
-    <outline text="Adventures In Mapping" title="Adventures In Mapping" description="" htmlUrl="https://adventuresinmapping.com" xmlUrl="https://adventuresinmapping.com/feed/"/>
-    <outline text="Robin Wilson's Blog" title="Robin Wilson's Blog" description="" htmlUrl="https://feeds.feedburner.com/rtwilson/blog" xmlUrl="https://feeds.feedburner.com/rtwilson/blog"/>
-    <outline text="Bill Morris" title="Bill Morris" description="" htmlUrl="https://billmorris.io/shoals" xmlUrl="https://billmorris.io/shoals/feed.xml"/>
-    <outline text="North Road" title="North Road" description="" htmlUrl="https://north-road.com" xmlUrl="https://north-road.com/feed/"/>
-    <outline text="Something About Maps" title="Something About Maps" description="" htmlUrl="https://somethingaboutmaps.wordpress.com" xmlUrl="https://somethingaboutmaps.wordpress.com/feed/"/>
+    <outline text="Mappery" title="Mappery" description="" type="rss" version="RSS" htmlUrl="https://mappery.org" xmlUrl="https://mappery.org/feed/"/>
+    <outline text="Markus Neteler Blog" title="Markus Neteler Blog" description="" type="rss" version="RSS" htmlUrl="https://neteler.org/blog/" xmlUrl="https://neteler.org/feed/"/>
+    <outline text="Adventures In Mapping" title="Adventures In Mapping" description="" type="rss" version="RSS" htmlUrl="https://adventuresinmapping.com" xmlUrl="https://adventuresinmapping.com/feed/"/>
+    <outline text="Robin Wilson's Blog" title="Robin Wilson's Blog" description="" type="rss" version="RSS" htmlUrl="https://feeds.feedburner.com/rtwilson/blog" xmlUrl="https://feeds.feedburner.com/rtwilson/blog"/>
+    <outline text="Bill Morris" title="Bill Morris" description="" type="rss" version="RSS" htmlUrl="https://billmorris.io/shoals" xmlUrl="https://billmorris.io/shoals/feed.xml"/>
+    <outline text="North Road" title="North Road" description="" type="rss" version="RSS" htmlUrl="https://north-road.com" xmlUrl="https://north-road.com/feed/"/>
+    <outline text="Something About Maps" title="Something About Maps" description="" type="rss" version="RSS" htmlUrl="https://somethingaboutmaps.wordpress.com" xmlUrl="https://somethingaboutmaps.wordpress.com/feed/"/>
   </body>
 </opml>
