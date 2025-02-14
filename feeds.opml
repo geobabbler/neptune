@@ -32,5 +32,6 @@
     <outline text="Robin Wilson's Blog" title="Robin Wilson's Blog" description="" htmlUrl="https://feeds.feedburner.com/rtwilson/blog" xmlUrl="https://feeds.feedburner.com/rtwilson/blog"/>
     <outline text="Bill Morris" title="Bill Morris" description="" htmlUrl="https://billmorris.io/shoals" xmlUrl="https://billmorris.io/shoals/feed.xml"/>
     <outline text="North Road" title="North Road" description="" htmlUrl="https://north-road.com" xmlUrl="https://north-road.com/feed/"/>
+    <outline text="Something About Maps" title="Something About Maps" description="" htmlUrl="https://somethingaboutmaps.wordpress.com" xmlUrl="https://somethingaboutmaps.wordpress.com/feed/"/>
   </body>
 </opml>
