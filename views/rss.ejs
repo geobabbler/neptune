@@ -12,7 +12,7 @@
                 <description><![CDATA[<%- item.description %>]]></description>
                 <link><%= item.link %></link>
                 <guid><%= item.link %></guid>
-                <pubDate><%= item.pubDate %></pubDate>
+                <pubDate><%= new Date(item.pubDate).toUTCString() %></pubDate>
                 <% if (item.original.author && typeof item.original.author[0] === 'string') { %>
                     <author><%= item.original.author[0] %></author>
                 <% } %>
