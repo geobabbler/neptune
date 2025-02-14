@@ -44,5 +44,6 @@
     <outline text="Paul Shapley" title="Paul Shapley" description="" type="rss" version="RSS" htmlUrl="https://www.paulshapley.com" xmlUrl="https://www.paulshapley.com/feeds/posts/default?alt=rss"/>
     <outline text="Decision-Making Information Resources and Solutions" title="Decision-Making Information Resources and Solutions" description="" type="rss" version="RSS" htmlUrl="https://proximityone.wordpress.com" xmlUrl="https://proximityone.wordpress.com/feed/"/>
     <outline text="GeoSolutions Group" title="GeoSolutions Group" description="" type="rss" version="RSS" htmlUrl="https://www.geosolutionsgroup.com" xmlUrl="https://www.geosolutionsgroup.com/category/blog/feed/"/>
+    <outline text="T-Kartor" title="T-Kartor" description="" type="rss" version="RSS" htmlUrl="https://www.t-kartor.com" xmlUrl="https://www.t-kartor.com/feed/rss2"/>
   </body>
 </opml>
