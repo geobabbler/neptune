@@ -336,6 +336,11 @@ app.get('/list', async (req, res) => {
     }
 });
 
+// Add this route at the top of your route definitions
+app.get('/', (req, res) => {
+    res.redirect(301, '/view');
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Feed aggregator app listening at http://localhost:${port}`);
