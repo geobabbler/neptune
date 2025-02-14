@@ -31,5 +31,6 @@
     <outline text="Adventures In Mapping" title="Adventures In Mapping" description="" htmlUrl="https://adventuresinmapping.com" xmlUrl="https://adventuresinmapping.com/feed/"/>
     <outline text="Robin Wilson's Blog" title="Robin Wilson's Blog" description="" htmlUrl="https://feeds.feedburner.com/rtwilson/blog" xmlUrl="https://feeds.feedburner.com/rtwilson/blog"/>
     <outline text="Bill Morris" title="Bill Morris" description="" htmlUrl="https://billmorris.io/shoals" xmlUrl="https://billmorris.io/shoals/feed.xml"/>
+    <outline text="North Road" title="North Road" description="" htmlUrl="https://north-road.com" xmlUrl="https://north-road.com/feed/"/>
   </body>
 </opml>
