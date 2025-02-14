@@ -32,5 +32,13 @@
     <outline text="Bill Morris" title="Bill Morris" description="" type="rss" version="RSS" htmlUrl="https://billmorris.io/shoals" xmlUrl="https://billmorris.io/shoals/feed.xml"/>
     <outline text="North Road" title="North Road" description="" type="rss" version="RSS" htmlUrl="https://north-road.com" xmlUrl="https://north-road.com/feed/"/>
     <outline text="Something About Maps" title="Something About Maps" description="" type="rss" version="RSS" htmlUrl="https://somethingaboutmaps.wordpress.com" xmlUrl="https://somethingaboutmaps.wordpress.com/feed/"/>
+    <outline text="Taylor Geospatial Institute" title="Taylor Geospatial Institute" description="" type="rss" version="RSS" htmlUrl="https://taylorgeospatial.org" xmlUrl="https://taylorgeospatial.org/feed/"/>
+    <outline text="Taylor Geospatial Engine" title="Taylor Geospatial Engine" description="" type="rss" version="RSS" htmlUrl="https://tgengine.org" xmlUrl="https://tgengine.org/feed/"/>
+    <outline text="Chris Holmes" title="Chris Holmes" description="" type="rss" version="RSS" htmlUrl="https://medium.com/feed/@cholmes" xmlUrl="https://medium.com/feed/@cholmes"/>
+    <outline text="Linda Stevens - Reimagining Geospatial" title="Linda Stevens - Reimagining Geospatial" description="" type="rss" version="RSS" htmlUrl="https://reimagininggeospatial.substack.com" xmlUrl="https://reimagininggeospatial.substack.com/feed"/>
+    <outline text="A VerySpatial Podcast" title="A VerySpatial Podcast" description="" type="rss" version="RSS" htmlUrl="https://veryspatial.com" xmlUrl="https://veryspatial.com/feed/"/>
+    <outline text="Justin Cole's Blog" title="Justin Cole's Blog" description="" type="rss" version="RSS" htmlUrl="https://justincolegis.com" xmlUrl="https://justincolegis.com/feed/"/>
+    <outline text="MapIdea" title="MapIdea" description="" type="rss" version="RSS" htmlUrl="https://www.mapidea.com/blog" xmlUrl="https://www.mapidea.com/blog?format=rss"/>
+    <outline text="Spatial Reserves" title="Spatial Reserves" description="" type="rss" version="RSS" htmlUrl="https://spatialreserves.wordpress.com" xmlUrl="https://spatialreserves.wordpress.com/feed/"/>
   </body>
 </opml>
