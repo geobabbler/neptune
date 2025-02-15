@@ -8,7 +8,6 @@
     <outline text="Spatially Adjusted" title="Spatially Adjusted" type="rss" xmlUrl="https://spatiallyadjusted.com/feed/"/>
     <outline text="Brian Maddox" title="Brian Maddox" type="rss" xmlUrl="https://brian.digitalmaddox.com/blog/?feed=rss2"/>
     <outline text="Esri" title="Esri" type="rss" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog"/>
-    <outline text="James Fee" title="James Fee" type="rss" version="RSS" htmlUrl="https://jamesfee.org" xmlUrl="https://jamesfee.org/feed.xml"/>
     <outline text="Free and Open Source GIS Ramblings" title="Free and Open Source GIS Ramblings" description="Anita Graser's blog about free and open source GIS software" type="rss" version="RSS" htmlUrl="https://anitagraser.com/" xmlUrl="http://anitagraser.com/feed/"/>
     <outline text="BostonGIS" title="BostonGIS" description="BostonGIS is a community of GIS professionals and enthusiasts in the Boston area." type="rss" version="RSS" htmlUrl="https://www.bostongis.com/blog/" xmlUrl="http://www.bostongis.com/blog/index.php?/feeds/index.rss2"/>
     <outline text="GeoHipster" title="GeoHipster" description="GeoHipster is a community of GIS professionals and enthusiasts in the Boston area." type="rss" version="RSS" htmlUrl="https://www.geohipster.com/" xmlUrl="https://www.geohipster.com/feed/"/>
