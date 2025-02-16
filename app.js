@@ -300,8 +300,8 @@ app.get('/view', async (req, res) => {
 app.get('/feed', async (req, res) => {
     try {
         // Make non-blocking request to StatCounter
-        axios.get('https://c.statcounter.com/13087567/0/3a2f1e85/1/')
-        .catch(() => {}); // Ignore any errors
+        //axios.get('https://c.statcounter.com/13087567/0/3a2f1e85/1/')
+        //.catch(() => {}); // Ignore any errors
     
         const rssFile = path.join(outputDir, 'aggregated.xml');
         if (!fs.existsSync(rssFile)) {
