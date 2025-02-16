@@ -33,7 +33,7 @@ const fetchAndCacheFeed = async (url, cachePath) => {
     const response = await axios.get(url, {
       timeout: 10000, // 10 second timeout
       headers: {
-        'User-Agent': 'RSS Feed Aggregator/1.0',
+        'User-Agent': 'Neptune Feed Aggregator/1.0',
         'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*'
       },
       maxRedirects: 5
@@ -159,66 +159,84 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
 
 // Helper function to parse both RSS and Atom feeds
 const parseFeedItems = (parsedFeed) => {
-  try {
-    // Check if it's an Atom feed
-    if (parsedFeed.feed) {
-      const feed = parsedFeed.feed;
-      const feedTitle = feed.title ? feed.title[0]._ || feed.title[0] : 'Untitled Feed';
-      const items = feed.entry ? feed.entry.map(entry => ({
-        title: entry.title ? entry.title[0]._ || entry.title[0] : 'Untitled',
-        description: entry.content ? entry.content[0]._ || entry.content[0] : 
-                    entry.summary ? entry.summary[0]._ || entry.summary[0] : '',
-        link: entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '',
-        pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
-        source: feedTitle,
-        author: entry.author ? entry.author[0].name ? entry.author[0].name[0] : '' : '',
-        original: entry
-      })) : [];
-      return { title: feedTitle, items };
+    try {
+        // Calculate date 12 months ago
+        const twelveMonthsAgo = new Date();
+        twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+        // Check if it's an Atom feed
+        if (parsedFeed.feed) {
+            const feed = parsedFeed.feed;
+            const feedTitle = feed.title ? feed.title[0]._ || feed.title[0] : 'Untitled Feed';
+            
+            const items = feed.entry ? feed.entry
+                .filter(entry => {
+                    const pubDate = new Date(entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : 0);
+                    return pubDate > twelveMonthsAgo;
+                })
+                .map(entry => ({
+                    title: entry.title ? entry.title[0]._ || entry.title[0] : 'Untitled',
+                    description: entry.content ? entry.content[0]._ || entry.content[0] : 
+                                entry.summary ? entry.summary[0]._ || entry.summary[0] : '',
+                    link: entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '',
+                    pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
+                    source: feedTitle,
+                    original: entry
+                })) : [];
+
+            return { title: feedTitle, items };
+        }
+        
+        // Handle RSS feed
+        if (parsedFeed.rss && parsedFeed.rss.channel) {
+            const channel = parsedFeed.rss.channel[0];
+            const feedTitle = channel.title[0];
+
+            const items = channel.item ? channel.item
+                .filter(item => {
+                    const pubDate = new Date(item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : 0);
+                    return pubDate > twelveMonthsAgo;
+                })
+                .map(item => ({
+                    title: item.title ? item.title[0] : 'Untitled',
+                    description: item.description ? item.description[0] : '',
+                    link: item.link ? item.link[0] : '',
+                    pubDate: item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : new Date().toUTCString(),
+                    source: feedTitle,
+                    original: item
+                })) : [];
+
+            return { title: feedTitle, items };
+        }
+
+        // Handle RDF (RSS 1.0) feed
+        if (parsedFeed['rdf:RDF']) {
+            const rdf = parsedFeed['rdf:RDF'];
+            const channel = rdf.channel[0];
+            const feedTitle = channel.title[0];
+
+            const items = rdf.item ? rdf.item
+                .filter(item => {
+                    const pubDate = new Date(item['dc:date'] ? item['dc:date'][0] : 0);
+                    return pubDate > twelveMonthsAgo;
+                })
+                .map(item => ({
+                    title: item.title ? item.title[0] : 'Untitled',
+                    description: item.description ? item.description[0] : '',
+                    link: item.link ? item.link[0] : '',
+                    pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
+                    source: feedTitle,
+                    original: item
+                })) : [];
+
+            return { title: feedTitle, items };
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error parsing feed:', error);
+        return null;
     }
-    
-    // Handle RSS feed
-    if (parsedFeed.rss && parsedFeed.rss.channel) {
-      const channel = parsedFeed.rss.channel[0];
-      const feedTitle = channel.title[0];
-
-      const items = channel.item ? channel.item.map(item => ({
-        title: item.title ? item.title[0] : 'Untitled',
-        description: item.description ? item.description[0] : '',
-        link: item.link ? item.link[0] : '',
-        pubDate: item.pubDate ? item.pubDate[0] : 
-                item.date ? item.date[0] : new Date().toUTCString(),
-        source: feedTitle,
-        //author: item["dc:creator"] ? item["dc:creator"][0] : '',
-        original: item
-      })) : [];
-      //console.log(items[0].author);
-      return { title: feedTitle, items };
-    }
-
-    // Handle RDF (RSS 1.0) feed
-    if (parsedFeed['rdf:RDF']) {
-      const rdf = parsedFeed['rdf:RDF'];
-      const channel = rdf.channel[0];
-      const feedTitle = channel.title[0];
-
-      const items = rdf.item ? rdf.item.map(item => ({
-        title: item.title ? item.title[0] : 'Untitled',
-        description: item.description ? item.description[0] : '',
-        link: item.link ? item.link[0] : '',
-        pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
-        source: feedTitle,
-        original: item
-      })) : [];
-
-      return { title: feedTitle, items };
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error parsing feed:', error);
-    return null;
-  }
 };
 
 // Generate aggregated RSS feed
