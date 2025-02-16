@@ -51,5 +51,6 @@
     <outline text="GrindGIS" title="GrindGIS" description="" type="rss" version="RSS" htmlUrl="https://grindgis.com" xmlUrl="https://grindgis.com/feed"/>
     <outline text="GIS Agents" title="GIS Agents" description="" type="rss" version="RSS" htmlUrl="https://www.gisagents.org" xmlUrl="https://www.gisagents.org/feeds/posts/default?alt=rss"/>
     <outline text="Geography Realm" title="Geography Realm" description="" type="rss" version="RSS" htmlUrl="https://www.geographyrealm.com" xmlUrl="https://www.geographyrealm.com/feed/"/>
+    <outline text="Spatial Data Science" title="Spatial Data Science" description="" type="rss" version="RSS" htmlUrl="https://medium.com/feed/spatial-data-science" xmlUrl="https://medium.com/feed/spatial-data-science"/>
   </body>
 </opml>
