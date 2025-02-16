@@ -299,9 +299,13 @@ app.get('/view', async (req, res) => {
 // Endpoint to serve the aggregated RSS feed
 app.get('/feed', async (req, res) => {
     try {
+        // Make non-blocking request to StatCounter
+        axios.get('https://c.statcounter.com/13087567/0/3a2f1e85/1/')
+        .catch(() => {}); // Ignore any errors
+    
         const rssFile = path.join(outputDir, 'aggregated.xml');
         if (!fs.existsSync(rssFile)) {
-            return res.status(500).send('Aggregated RSS feed is not available.');
+            return res.status(404).send('Feed not found.');
         }
         
         res.set('Content-Type', 'application/xml');
