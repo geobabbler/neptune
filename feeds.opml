@@ -54,5 +54,9 @@
     <outline text="Spatial Data Science" title="Spatial Data Science" description="" type="rss" version="RSS" htmlUrl="https://medium.com/feed/spatial-data-science" xmlUrl="https://medium.com/feed/spatial-data-science"/>
     <outline text="Digital EBP" title="Digital EBP" description="" type="rss" version="RSS" htmlUrl="https://digital.ebp.ch" xmlUrl="https://digital.ebp.ch/feed/"/>
     <outline text="Spatialty" title="Spatialty" description="" type="rss" version="RSS" htmlUrl="https://spatialty.com" xmlUrl="https://spatialty.com/feed/"/>
+    <outline text="Kevin Bullock" title="Kevin Bullock" description="" type="rss" version="RSS" htmlUrl="https://kbullock.substack.com" xmlUrl="https://kbullock.substack.com/feed"/>
+    <outline text="GeoAI Unpacked" title="GeoAI Unpacked" description="" type="rss" version="RSS" htmlUrl="https://geoaiunpacked.substack.com" xmlUrl="https://geoaiunpacked.substack.com/feed"/>
+    <outline text="Spatial Edge" title="Spatial Edge" description="" type="rss" version="RSS" htmlUrl="https://www.spatialedge.co" xmlUrl="https://www.spatialedge.co/feed"/>
+    <outline text="Spectral Reflectance" title="Spectral Reflectance" description="" type="rss" version="RSS" htmlUrl="https://www.spectralreflectance.space" xmlUrl="https://www.spectralreflectance.space/feed"/>
   </body>
 </opml>
