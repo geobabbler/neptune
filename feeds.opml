@@ -58,5 +58,6 @@
     <outline text="GeoAI Unpacked" title="GeoAI Unpacked" description="" type="rss" version="RSS" htmlUrl="https://geoaiunpacked.substack.com" xmlUrl="https://geoaiunpacked.substack.com/feed"/>
     <outline text="Spatial Edge" title="Spatial Edge" description="" type="rss" version="RSS" htmlUrl="https://www.spatialedge.co" xmlUrl="https://www.spatialedge.co/feed"/>
     <outline text="Spectral Reflectance" title="Spectral Reflectance" description="" type="rss" version="RSS" htmlUrl="https://www.spectralreflectance.space" xmlUrl="https://www.spectralreflectance.space/feed"/>
+    <outline text="gadom.ski" title="gadom.ski" description="" type="rss" version="RSS" htmlUrl="https://www.gadom.ski" xmlUrl="https://www.gadom.ski/atom.xml"/>
   </body>
 </opml>
