@@ -59,5 +59,6 @@
     <outline text="Spatial Edge" title="Spatial Edge" description="" type="rss" version="RSS" htmlUrl="https://www.spatialedge.co" xmlUrl="https://www.spatialedge.co/feed"/>
     <outline text="Spectral Reflectance" title="Spectral Reflectance" description="" type="rss" version="RSS" htmlUrl="https://www.spectralreflectance.space" xmlUrl="https://www.spectralreflectance.space/feed"/>
     <outline text="gadom.ski" title="gadom.ski" description="" type="rss" version="RSS" htmlUrl="https://www.gadom.ski" xmlUrl="https://www.gadom.ski/atom.xml"/>
+    <outline text="The Geospatial Index" title="The Geospatial Index" description="" type="rss" version="RSS" htmlUrl="https://www.geospatial.money" xmlUrl="https://www.geospatial.money/feed"/>
   </body>
 </opml>
