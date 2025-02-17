@@ -53,5 +53,6 @@
     <outline text="Geography Realm" title="Geography Realm" description="" type="rss" version="RSS" htmlUrl="https://www.geographyrealm.com" xmlUrl="https://www.geographyrealm.com/feed/"/>
     <outline text="Spatial Data Science" title="Spatial Data Science" description="" type="rss" version="RSS" htmlUrl="https://medium.com/feed/spatial-data-science" xmlUrl="https://medium.com/feed/spatial-data-science"/>
     <outline text="Digital EBP" title="Digital EBP" description="" type="rss" version="RSS" htmlUrl="https://digital.ebp.ch" xmlUrl="https://digital.ebp.ch/feed/"/>
+    <outline text="Spatialty" title="Spatialty" description="" type="rss" version="RSS" htmlUrl="https://spatialty.com" xmlUrl="https://spatialty.com/feed/"/>
   </body>
 </opml>
