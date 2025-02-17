@@ -8,6 +8,7 @@ const { Builder } = require('xml2js');
 const schedule = require('node-schedule');
 const ejs = require('ejs');
 const RSS = require('rss');
+const { decode } = require('html-entities');
 
 const app = express();
 const port = 8080;
@@ -78,31 +79,31 @@ const filterFeedContent = (feedXml) => {
 
 // Aggregate and render feeds
 const renderFeeds = (rssFeed) => {
-    return new Promise((resolve, reject) => {
-        xml2js.parseString(rssFeed, (err, result) => {
-            if (err) reject(err);
+  return new Promise((resolve, reject) => {
+    xml2js.parseString(rssFeed, (err, result) => {
+      if (err) reject(err);
 
-            const items = result.rss.channel[0].item || [];
-            const feedItems = items.map((item) => ({
-                title: item.title ? item.title[0] : 'No title',
-                description: item.description ? item.description[0] : 'No description',
-                link: item.link ? item.link[0] : '#',
-                pubDate: item.pubDate ? item.pubDate[0] : 'Unknown date',
-                source: item.source ? item.source[0]._ : 'Unknown source',
-                author: item.author ? item.author[0] : 
-                        item['dc:creator'] ? item['dc:creator'][0] : null
-            }));
+      const items = result.rss.channel[0].item || [];
+      const feedItems = items.map((item) => ({
+        title: item.title ? item.title[0] : 'No title',
+        description: item.description ? item.description[0] : 'No description',
+        link: item.link ? item.link[0] : '#',
+        pubDate: item.pubDate ? item.pubDate[0] : 'Unknown date',
+        source: item.source ? item.source[0]._ : 'Unknown source',
+        author: item.author ? item.author[0] :
+          item['dc:creator'] ? item['dc:creator'][0] : null
+      }));
 
-            // Sort items by publication date (newest first)
-            feedItems.sort((a, b) => {
-                const dateA = new Date(a.pubDate);
-                const dateB = new Date(b.pubDate);
-                return dateB - dateA;
-            });
+      // Sort items by publication date (newest first)
+      feedItems.sort((a, b) => {
+        const dateA = new Date(a.pubDate);
+        const dateB = new Date(b.pubDate);
+        return dateB - dateA;
+      });
 
-            resolve(feedItems);
-        });
+      resolve(feedItems);
     });
+  });
 };
 
 // Main aggregation function
@@ -127,10 +128,10 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
       if (feedData) {
         const filteredData = filterFeedContent(feedData);
         const parsedFeed = await xml2js.parseStringPromise(filteredData);
-        
+
         // Determine feed type and extract items
         const feedInfo = parseFeedItems(parsedFeed);
-        
+
         if (feedInfo && feedInfo.items.length > 0) {
           aggregatedFeeds.push(feedInfo);
         }
@@ -145,8 +146,8 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
     // Generate HTML output based on the generated RSS feed
     const feedItems = await renderFeeds(rssFeed);
     const html = await ejs.renderFile(
-        path.join(__dirname, 'views', 'feeds.ejs'),
-        { items: feedItems }
+      path.join(__dirname, 'views', 'feeds.ejs'),
+      { items: feedItems }
     );
     const outputFile = path.join(outputDir, 'aggregated.html');
     fs.writeFileSync(outputFile, html);
@@ -157,108 +158,129 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
   }
 };
 
+const summarizeText = (text, maxLength) => {
+  // Remove HTML tags
+  text = text.replace(/<[^>]*>/g, '');
+
+  // Decode HTML entities using html-entities
+  text = decode(text);
+
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  let truncatedText = text.substring(0, maxLength);
+  let lastSpaceIndex = truncatedText.lastIndexOf(" ");
+
+  if (lastSpaceIndex > 0) {
+    truncatedText = truncatedText.substring(0, lastSpaceIndex);
+  }
+
+  return truncatedText + "...";
+};
+
 // Helper function to parse both RSS and Atom feeds
 const parseFeedItems = (parsedFeed) => {
-    try {
-        // Calculate date 12 months ago
-        const twelveMonthsAgo = new Date();
-        twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  try {
+    // Calculate date 12 months ago
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
 
-        // Check if it's an Atom feed
-        if (parsedFeed.feed) {
-            const feed = parsedFeed.feed;
-            const feedTitle = feed.title ? feed.title[0]._ || feed.title[0] : 'Untitled Feed';
-            
-            const items = feed.entry ? feed.entry
-                .filter(entry => {
-                    const pubDate = new Date(entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : 0);
-                    return pubDate > twelveMonthsAgo;
-                })
-                .map(entry => ({
-                    title: entry.title ? entry.title[0]._ || entry.title[0] : 'Untitled',
-                    description: entry.content ? entry.content[0]._ || entry.content[0] : 
-                                entry.summary ? entry.summary[0]._ || entry.summary[0] : '',
-                    link: entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '',
-                    pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
-                    source: feedTitle,
-                    original: entry
-                })) : [];
+    // Check if it's an Atom feed
+    if (parsedFeed.feed) {
+      const feed = parsedFeed.feed;
+      const feedTitle = feed.title ? feed.title[0]._ || feed.title[0] : 'Untitled Feed';
 
-            return { title: feedTitle, items };
-        }
-        
-        // Handle RSS feed
-        if (parsedFeed.rss && parsedFeed.rss.channel) {
-            const channel = parsedFeed.rss.channel[0];
-            const feedTitle = channel.title[0];
+      const items = feed.entry ? feed.entry
+        .filter(entry => {
+          const pubDate = new Date(entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : 0);
+          return pubDate > twelveMonthsAgo;
+        })
+        .map(entry => ({
+          title: entry.title ? entry.title[0]._ || entry.title[0] : 'Untitled',
+          description: summarizeText(entry.content ? entry.content[0]._ || entry.content[0] :
+            entry.summary ? entry.summary[0]._ || entry.summary[0] : '', 1000),
+          link: entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '',
+          pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
+          source: feedTitle,
+          original: entry
+        })) : [];
 
-            const items = channel.item ? channel.item
-                .filter(item => {
-                    const pubDate = new Date(item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : 0);
-                    return pubDate > twelveMonthsAgo;
-                })
-                .map(item => ({
-                    title: item.title ? item.title[0] : 'Untitled',
-                    description: item.description ? item.description[0] : '',
-                    link: item.link ? item.link[0] : '',
-                    pubDate: item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : new Date().toUTCString(),
-                    source: feedTitle,
-                    original: item
-                })) : [];
-
-            return { title: feedTitle, items };
-        }
-
-        // Handle RDF (RSS 1.0) feed
-        if (parsedFeed['rdf:RDF']) {
-            const rdf = parsedFeed['rdf:RDF'];
-            const channel = rdf.channel[0];
-            const feedTitle = channel.title[0];
-
-            const items = rdf.item ? rdf.item
-                .filter(item => {
-                    const pubDate = new Date(item['dc:date'] ? item['dc:date'][0] : 0);
-                    return pubDate > twelveMonthsAgo;
-                })
-                .map(item => ({
-                    title: item.title ? item.title[0] : 'Untitled',
-                    description: item.description ? item.description[0] : '',
-                    link: item.link ? item.link[0] : '',
-                    pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
-                    source: feedTitle,
-                    original: item
-                })) : [];
-
-            return { title: feedTitle, items };
-        }
-
-        return null;
-    } catch (error) {
-        console.error('Error parsing feed:', error);
-        return null;
+      return { title: feedTitle, items };
     }
+
+    // Handle RSS feed
+    if (parsedFeed.rss && parsedFeed.rss.channel) {
+      const channel = parsedFeed.rss.channel[0];
+      const feedTitle = channel.title[0];
+
+      const items = channel.item ? channel.item
+        .filter(item => {
+          const pubDate = new Date(item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : 0);
+          return pubDate > twelveMonthsAgo;
+        })
+        .map(item => ({
+          title: item.title ? item.title[0] : 'Untitled',
+          description: summarizeText(item.description ? item.description[0] : '', 1000),
+          link: item.link ? item.link[0] : '',
+          pubDate: item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : new Date().toUTCString(),
+          source: feedTitle,
+          original: item
+        })) : [];
+
+      return { title: feedTitle, items };
+    }
+
+    // Handle RDF (RSS 1.0) feed
+    if (parsedFeed['rdf:RDF']) {
+      const rdf = parsedFeed['rdf:RDF'];
+      const channel = rdf.channel[0];
+      const feedTitle = channel.title[0];
+
+      const items = rdf.item ? rdf.item
+        .filter(item => {
+          const pubDate = new Date(item['dc:date'] ? item['dc:date'][0] : 0);
+          return pubDate > twelveMonthsAgo;
+        })
+        .map(item => ({
+          title: item.title ? item.title[0] : 'Untitled',
+          description: summarizeText(item.description ? item.description[0] : '', 1000),
+          link: item.link ? item.link[0] : '',
+          pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
+          source: feedTitle,
+          original: item
+        })) : [];
+
+      return { title: feedTitle, items };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error parsing feed:', error);
+    return null;
+  }
 };
 
 // Generate aggregated RSS feed
 const generateRSSFeed = async (feeds) => {
-    // Flatten all items and remove duplicates based on link
-    const allItems = feeds.flatMap(feed => feed.items);
-    const uniqueItems = allItems.filter((item, index, self) =>
-        index === self.findIndex((t) => t.link === item.link)
-    );
-    
-    // Sort by publication date (newest first)
-    uniqueItems.sort((a, b) => {
-        const dateA = a.original.pubDate ? new Date(a.original.pubDate[0]) : new Date(0);
-        const dateB = b.original.pubDate ? new Date(b.original.pubDate[0]) : new Date(0);
-        return dateB - dateA;
-    });
+  // Flatten all items and remove duplicates based on link
+  const allItems = feeds.flatMap(feed => feed.items);
+  const uniqueItems = allItems.filter((item, index, self) =>
+    index === self.findIndex((t) => t.link === item.link)
+  );
 
-    // Generate RSS using EJS template
-    return await ejs.renderFile(
-        path.join(__dirname, 'views', 'rss.ejs'),
-        { items: uniqueItems }
-    );
+  // Sort by publication date (newest first)
+  uniqueItems.sort((a, b) => {
+    const dateA = a.original.pubDate ? new Date(a.original.pubDate[0]) : new Date(0);
+    const dateB = b.original.pubDate ? new Date(b.original.pubDate[0]) : new Date(0);
+    return dateB - dateA;
+  });
+
+  // Generate RSS using EJS template
+  return await ejs.renderFile(
+    path.join(__dirname, 'views', 'rss.ejs'),
+    { items: uniqueItems }
+  );
 };
 
 // Schedule aggregation at the 5th minute of every hour
@@ -281,39 +303,36 @@ app.post('/rebuild', async (req, res) => {
 
 // Endpoint to serve the aggregated HTML
 app.get('/view', async (req, res) => {
-    try {
-        const rssFile = path.join(outputDir, 'aggregated.xml');
-        if (!fs.existsSync(rssFile)) {
-            return res.status(500).send('Aggregated RSS feed is not available.');
-        }
-        
-        const rssFeed = fs.readFileSync(rssFile, 'utf8');
-        const feedItems = await renderFeeds(rssFeed);
-        res.render('feeds', { items: feedItems });
-    } catch (error) {
-        console.error('Error rendering feeds:', error);
-        res.status(500).send('Error rendering feeds.');
+  try {
+    const rssFile = path.join(outputDir, 'aggregated.xml');
+    if (!fs.existsSync(rssFile)) {
+      return res.status(500).send('Aggregated RSS feed is not available.');
     }
+
+    const rssFeed = fs.readFileSync(rssFile, 'utf8');
+    const feedItems = await renderFeeds(rssFeed);
+    res.render('feeds', { items: feedItems });
+  } catch (error) {
+    console.error('Error rendering feeds:', error);
+    res.status(500).send('Error rendering feeds.');
+  }
 });
 
 // Endpoint to serve the aggregated RSS feed
 app.get('/feed', async (req, res) => {
-    try {
-        // Make non-blocking request to StatCounter
-        //axios.get('https://c.statcounter.com/13087567/0/3a2f1e85/1/')
-        //.catch(() => {}); // Ignore any errors
-    
-        const rssFile = path.join(outputDir, 'aggregated.xml');
-        if (!fs.existsSync(rssFile)) {
-            return res.status(404).send('Feed not found.');
-        }
-        
-        res.set('Content-Type', 'application/xml');
-        res.send(fs.readFileSync(rssFile, 'utf8'));
-    } catch (error) {
-        console.error('Error serving RSS feed:', error);
-        res.status(500).send('Error serving RSS feed.');
+  try {
+
+    const rssFile = path.join(outputDir, 'aggregated.xml');
+    if (!fs.existsSync(rssFile)) {
+      return res.status(404).send('Feed not found.');
     }
+
+    res.set('Content-Type', 'application/xml');
+    res.send(fs.readFileSync(rssFile, 'utf8'));
+  } catch (error) {
+    console.error('Error serving RSS feed:', error);
+    res.status(500).send('Error serving RSS feed.');
+  }
 });
 
 // Initial rebuild to ensure feeds are up to date
@@ -324,43 +343,43 @@ app.get('/feed', async (req, res) => {
 
 // Add this function to parse OPML and return feed info
 const getFeedList = async () => {
-    const opmlFile = path.join(__dirname, 'feeds.opml');
-    const opmlContent = fs.readFileSync(opmlFile, 'utf8');
-    const parser = new xml2js.Parser();
-    
-    try {
-        const opmlData = await parser.parseStringPromise(opmlContent);
-        const outlines = opmlData.opml.body[0].outline;
-        return outlines
-            .map(outline => ({
-                title: outline.$.title || outline.$.text,
-                xmlUrl: outline.$.htmlUrl || outline.$.xmlUrl
-            }))
-            .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
-    } catch (error) {
-        console.error('Error parsing OPML:', error);
-        return [];
-    }
+  const opmlFile = path.join(__dirname, 'feeds.opml');
+  const opmlContent = fs.readFileSync(opmlFile, 'utf8');
+  const parser = new xml2js.Parser();
+
+  try {
+    const opmlData = await parser.parseStringPromise(opmlContent);
+    const outlines = opmlData.opml.body[0].outline;
+    return outlines
+      .map(outline => ({
+        title: outline.$.title || outline.$.text,
+        xmlUrl: outline.$.htmlUrl || outline.$.xmlUrl
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
+  } catch (error) {
+    console.error('Error parsing OPML:', error);
+    return [];
+  }
 };
 
 // Update the endpoint to handle async function
 app.get('/list', async (req, res) => {
-    try {
-        const feeds = await getFeedList();
-        const html = await ejs.renderFile(
-            path.join(__dirname, 'views', 'list.ejs'),
-            { feeds }
-        );
-        res.send(html);
-    } catch (error) {
-        console.error('Error generating feed list:', error);
-        res.status(500).send('Error generating feed list');
-    }
+  try {
+    const feeds = await getFeedList();
+    const html = await ejs.renderFile(
+      path.join(__dirname, 'views', 'list.ejs'),
+      { feeds }
+    );
+    res.send(html);
+  } catch (error) {
+    console.error('Error generating feed list:', error);
+    res.status(500).send('Error generating feed list');
+  }
 });
 
 // Add this route at the top of your route definitions
 app.get('/', (req, res) => {
-    res.redirect(301, '/view');
+  res.redirect(301, '/view');
 });
 
 // Start server
