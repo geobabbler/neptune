@@ -190,6 +190,7 @@ const parseFeedItems = (parsedFeed) => {
     if (parsedFeed.feed) {
       const feed = parsedFeed.feed;
       const feedTitle = feed.title ? feed.title[0]._ || feed.title[0] : 'Untitled Feed';
+      const feedLink = feed.link.href ? feed.link[0].href || feed.link[0].href : '/list';
 
       const items = feed.entry ? feed.entry
         .filter(entry => {
@@ -203,6 +204,7 @@ const parseFeedItems = (parsedFeed) => {
           link: entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '',
           pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
           source: feedTitle,
+          sourceLink: feedLink,
           original: entry
         })) : [];
 
@@ -213,6 +215,7 @@ const parseFeedItems = (parsedFeed) => {
     if (parsedFeed.rss && parsedFeed.rss.channel) {
       const channel = parsedFeed.rss.channel[0];
       const feedTitle = channel.title[0];
+      const feedLink = channel.link[0];
 
       const items = channel.item ? channel.item
         .filter(item => {
@@ -225,6 +228,7 @@ const parseFeedItems = (parsedFeed) => {
           link: item.link ? item.link[0] : '',
           pubDate: item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : new Date().toUTCString(),
           source: feedTitle,
+          sourceLink: feedLink.toString(),
           original: item
         })) : [];
 
@@ -236,7 +240,7 @@ const parseFeedItems = (parsedFeed) => {
       const rdf = parsedFeed['rdf:RDF'];
       const channel = rdf.channel[0];
       const feedTitle = channel.title[0];
-
+      const feedLink = channel.link[0];
       const items = rdf.item ? rdf.item
         .filter(item => {
           const pubDate = new Date(item['dc:date'] ? item['dc:date'][0] : 0);
@@ -248,6 +252,7 @@ const parseFeedItems = (parsedFeed) => {
           link: item.link ? item.link[0] : '',
           pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
           source: feedTitle,
+          sourceLink: feedLink.toString(),
           original: item
         })) : [];
 
