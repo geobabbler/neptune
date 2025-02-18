@@ -62,5 +62,6 @@
     <outline text="The Geospatial Index" title="The Geospatial Index" description="" type="rss" version="RSS" htmlUrl="https://www.geospatial.money" xmlUrl="https://www.geospatial.money/feed"/>
     <outline text="ChandlerGeog" title="ChandlerGeog" description="" type="rss" version="RSS" htmlUrl="https://chandlergeog.wordpress.com" xmlUrl="https://chandlergeog.wordpress.com/feed/"/>
     <outline text="Maps Mania" title="Maps Mania" description="" type="rss" version="RSS" htmlUrl="https://googlemapsmania.blogspot.com" xmlUrl="https://googlemapsmania.blogspot.com/feeds/posts/default?alt=rss"/>
+    <outline text="Project Geospatial" title="Project Geospatial" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org" xmlUrl="https://projectgeospatial.org/podcast-archive?format=rss"/>
   </body>
 </opml>
