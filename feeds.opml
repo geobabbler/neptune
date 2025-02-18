@@ -60,5 +60,6 @@
     <outline text="Spectral Reflectance" title="Spectral Reflectance" description="" type="rss" version="RSS" htmlUrl="https://www.spectralreflectance.space" xmlUrl="https://www.spectralreflectance.space/feed"/>
     <outline text="gadom.ski" title="gadom.ski" description="" type="rss" version="RSS" htmlUrl="https://www.gadom.ski" xmlUrl="https://www.gadom.ski/atom.xml"/>
     <outline text="The Geospatial Index" title="The Geospatial Index" description="" type="rss" version="RSS" htmlUrl="https://www.geospatial.money" xmlUrl="https://www.geospatial.money/feed"/>
+    <outline text="ChandlerGeog" title="ChandlerGeog" description="" type="rss" version="RSS" htmlUrl="https://chandlergeog.wordpress.com" xmlUrl="https://chandlergeog.wordpress.com/feed/"/>
   </body>
 </opml>
