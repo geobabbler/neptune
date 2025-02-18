@@ -46,7 +46,7 @@
     <outline text="GeoSolutions Group" title="GeoSolutions Group" description="" type="rss" version="RSS" htmlUrl="https://www.geosolutionsgroup.com" xmlUrl="https://www.geosolutionsgroup.com/category/blog/feed/"/>
     <outline text="T-Kartor" title="T-Kartor" description="" type="rss" version="RSS" htmlUrl="https://www.t-kartor.com" xmlUrl="https://www.t-kartor.com/feed/rss2"/>
     <outline text="MapBrief by Brian Timoney" title="MapBrief by Brian Timoney" description="" type="rss" version="RSS" htmlUrl="https://mapbrief.com" xmlUrl="https://mapbrief.com/feed/"/>
-    <outline text="Crunchy Data" title="Crunchy Data" description="" type="rss" version="RSS" htmlUrl="https://www.crunchydata.com" xmlUrl="https://www.crunchydata.com/blog/rss.xml"/>
+    <!--<outline text="Crunchy Data" title="Crunchy Data" description="" type="rss" version="RSS" htmlUrl="https://www.crunchydata.com" xmlUrl="https://www.crunchydata.com/blog/rss.xml"/>-->
     <outline text="OpenStreetMap Blog" title="OpenStreetMap Blog" description="" type="rss" version="RSS" htmlUrl="https://blogs.openstreetmap.org" xmlUrl="https://blogs.openstreetmap.org/rss20.xml"/>
     <outline text="GrindGIS" title="GrindGIS" description="" type="rss" version="RSS" htmlUrl="https://grindgis.com" xmlUrl="https://grindgis.com/feed"/>
     <outline text="GIS Agents" title="GIS Agents" description="" type="rss" version="RSS" htmlUrl="https://www.gisagents.org" xmlUrl="https://www.gisagents.org/feeds/posts/default?alt=rss"/>
@@ -63,5 +63,6 @@
     <outline text="ChandlerGeog" title="ChandlerGeog" description="" type="rss" version="RSS" htmlUrl="https://chandlergeog.wordpress.com" xmlUrl="https://chandlergeog.wordpress.com/feed/"/>
     <outline text="Maps Mania" title="Maps Mania" description="" type="rss" version="RSS" htmlUrl="https://googlemapsmania.blogspot.com" xmlUrl="https://googlemapsmania.blogspot.com/feeds/posts/default?alt=rss"/>
     <outline text="Project Geospatial" title="Project Geospatial" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org" xmlUrl="https://projectgeospatial.org/podcast-archive?format=rss"/>
+    <outline text="Crunchy Data" title="Crunchy Data" description="" type="rss" version="RSS" htmlUrl="https://www.crunchydata.com/blog/topic/spatial/rss.xml" xmlUrl="https://www.crunchydata.com/blog/topic/spatial/rss.xml"/>
   </body>
 </opml>
