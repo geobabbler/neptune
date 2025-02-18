@@ -61,6 +61,6 @@
     <outline text="gadom.ski" title="gadom.ski" description="" type="rss" version="RSS" htmlUrl="https://www.gadom.ski" xmlUrl="https://www.gadom.ski/atom.xml"/>
     <outline text="The Geospatial Index" title="The Geospatial Index" description="" type="rss" version="RSS" htmlUrl="https://www.geospatial.money" xmlUrl="https://www.geospatial.money/feed"/>
     <outline text="ChandlerGeog" title="ChandlerGeog" description="" type="rss" version="RSS" htmlUrl="https://chandlergeog.wordpress.com" xmlUrl="https://chandlergeog.wordpress.com/feed/"/>
-    <outline text="Google Maps Mania" title="Google Maps Mania" description="" type="rss" version="RSS" htmlUrl="https://googlemapsmania.blogspot.com" xmlUrl="https://googlemapsmania.blogspot.com/feeds/posts/default?alt=rss"/>
+    <outline text="Maps Mania" title="Maps Mania" description="" type="rss" version="RSS" htmlUrl="https://googlemapsmania.blogspot.com" xmlUrl="https://googlemapsmania.blogspot.com/feeds/posts/default?alt=rss"/>
   </body>
 </opml>
