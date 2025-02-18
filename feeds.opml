@@ -64,5 +64,6 @@
     <outline text="Maps Mania" title="Maps Mania" description="" type="rss" version="RSS" htmlUrl="https://googlemapsmania.blogspot.com" xmlUrl="https://googlemapsmania.blogspot.com/feeds/posts/default?alt=rss"/>
     <outline text="Project Geospatial" title="Project Geospatial" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org" xmlUrl="https://projectgeospatial.org/podcast-archive?format=rss"/>
     <outline text="Crunchy Data" title="Crunchy Data" description="" type="rss" version="RSS" htmlUrl="https://www.crunchydata.com/blog/topic/spatial/rss.xml" xmlUrl="https://www.crunchydata.com/blog/topic/spatial/rss.xml"/>
+    <outline text="Towards Data Science - Geospatial" title="Towards Data Science - Geospatial" description="" type="rss" version="RSS" htmlUrl="https://towardsdatascience.com/tag/geospatial/feed" xmlUrl="https://towardsdatascience.com/tag/geospatial/feed"/>
   </body>
 </opml>
