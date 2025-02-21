@@ -387,6 +387,16 @@ app.get('/', (req, res) => {
   res.redirect(301, '/view');
 });
 
+// Add near other endpoints
+app.get('/version', (req, res) => {
+    const packageJson = require('./package.json');
+    res.json({
+        name: packageJson.name,
+        version: packageJson.version,
+        description: packageJson.description
+    });
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Feed aggregator app listening at http://localhost:${port}`);

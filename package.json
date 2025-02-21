@@ -1,7 +1,7 @@
 {
     "name": "neptune",
-    "version": "1.0.0",
-    "description": "A Node.js application that aggregates RSS/Atom feeds from an OPML file and generates an aggregated HTML page and RSS feed.",
+    "version": "1.0.1",
+    "description": "A Node.js application that aggregates RSS/Atom feeds from an OPML file and generates a list of feeds, an aggregated HTML page, and RSS feed. Trans rights are human rights.",
     "main": "app.js",
     "scripts": {
         "start": "node app.js",
