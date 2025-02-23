@@ -67,5 +67,6 @@
     <outline text="Crunchy Data" title="Crunchy Data" description="" type="rss" version="RSS" htmlUrl="https://www.crunchydata.com/blog/topic/spatial/rss.xml" xmlUrl="https://www.crunchydata.com/blog/topic/spatial/rss.xml"/>
     <outline text="Towards Data Science - Geospatial" title="Towards Data Science - Geospatial" description="" type="rss" version="RSS" htmlUrl="https://towardsdatascience.com/tag/geospatial/feed" xmlUrl="https://towardsdatascience.com/tag/geospatial/feed"/>
     <outline text="Fulcrum" title="Fulcrum" description="" type="rss" version="RSS" htmlUrl="https://www.fulcrumapp.com" xmlUrl="https://www.fulcrumapp.com/feed"/>
+    <outline text="Geospatial World" title="Geospatial World" description="" type="rss" version="RSS" htmlUrl="https://geospatialworld.net" xmlUrl="https://geospatialworld.net/feed/"/>
   </body>
 </opml>
