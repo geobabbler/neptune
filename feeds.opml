@@ -69,5 +69,8 @@
     <outline text="Fulcrum" title="Fulcrum" description="" type="rss" version="RSS" htmlUrl="https://www.fulcrumapp.com" xmlUrl="https://www.fulcrumapp.com/feed"/>
     <outline text="Geospatial World" title="Geospatial World" description="" type="rss" version="RSS" htmlUrl="https://geospatialworld.net" xmlUrl="https://geospatialworld.net/feed/"/>
     <outline text="Stephan Heuel" title="Stephan Heuel" description="" type="rss" version="RSS" htmlUrl="https://blog.heuel.org" xmlUrl="https://blog.heuel.org/feeds/all.rss.xml"/>
+    <outline text="Christopher Ren" title="Christopher Ren" description="" type="rss" version="RSS" htmlUrl="https://christopherren.substack.com" xmlUrl="https://christopherren.substack.com/feed"/>
+    <outline text="Geospatial Digest" title="Geospatial Digest" description="" type="rss" version="RSS" htmlUrl="https://geospatialdigest.substack.com" xmlUrl="https://geospatialdigest.substack.com/feed"/>
+    <outline text="GeoAI and the Law" title="GeoAI and the Law" description="" type="rss" version="RSS" htmlUrl="https://geospatiallaw.substack.com" xmlUrl="https://geospatiallaw.substack.com/feed"/>
   </body>
 </opml>
