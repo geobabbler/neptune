@@ -72,5 +72,6 @@
     <outline text="Christopher Ren" title="Christopher Ren" description="" type="rss" version="RSS" htmlUrl="https://christopherren.substack.com" xmlUrl="https://christopherren.substack.com/feed"/>
     <outline text="Geospatial Digest" title="Geospatial Digest" description="" type="rss" version="RSS" htmlUrl="https://geospatialdigest.substack.com" xmlUrl="https://geospatialdigest.substack.com/feed"/>
     <outline text="GeoAI and the Law" title="GeoAI and the Law" description="" type="rss" version="RSS" htmlUrl="https://geospatiallaw.substack.com" xmlUrl="https://geospatiallaw.substack.com/feed"/>
+    <outline text="Cercana Systems" title="Cercana Systems" description="" type="rss" version="RSS" htmlUrl="https://cercanasystems.com" xmlUrl="https://cercanasystems.com/feed/"/>
   </body>
 </opml>
