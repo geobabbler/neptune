@@ -75,5 +75,7 @@
     <outline text="Cercana Systems" title="Cercana Systems" description="" type="rss" version="RSS" htmlUrl="https://cercanasystems.com" xmlUrl="https://cercanasystems.com/feed/"/>
     <outline text="Justin Meyers - Revolutionary GIS" title="Justin Meyers - Revolutionary GIS" description="" type="rss" version="RSS" htmlUrl="https://revolutionarygis.wordpress.com" xmlUrl="https://revolutionarygis.wordpress.com/feed/"/>
     <outline text="Oslandia" title="Oslandia" description="" type="rss" version="RSS" htmlUrl="https://oslandia.com" xmlUrl="https://oslandia.com/en/feed"/>
+    <outline text="Spatial Product Growth with GeoCalamito" title="Spatial Product Growth with GeoCalamito" description="" type="rss" version="RSS" htmlUrl="https://geocalamito.substack.com" xmlUrl="https://geocalamito.substack.com/feed"/>
+    <outline text="Maps, Tattoos, and Geospatial Views" title="Maps, Tattoos, and Geospatial Views" description="" type="rss" version="RSS" htmlUrl="https://thespatialjefe.substack.com" xmlUrl="https://thespatialjefe.substack.com/feed"/>
   </body>
 </opml>
