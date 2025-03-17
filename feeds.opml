@@ -77,5 +77,6 @@
     <outline text="Oslandia" title="Oslandia" description="" type="rss" version="RSS" htmlUrl="https://oslandia.com" xmlUrl="https://oslandia.com/en/feed"/>
     <outline text="Spatial Product Growth with GeoCalamito" title="Spatial Product Growth with GeoCalamito" description="" type="rss" version="RSS" htmlUrl="https://geocalamito.substack.com" xmlUrl="https://geocalamito.substack.com/feed"/>
     <outline text="Maps, Tattoos, and Geospatial Views" title="Maps, Tattoos, and Geospatial Views" description="" type="rss" version="RSS" htmlUrl="https://thespatialjefe.substack.com" xmlUrl="https://thespatialjefe.substack.com/feed"/>
+    <outline text="Geomermaids" title="Geomermaids" description="" type="rss" version="RSS" htmlUrl="https://geomermaids.com" xmlUrl="https://geomermaids.com/rss.xml"/>
   </body>
 </opml>
