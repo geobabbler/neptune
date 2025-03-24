@@ -78,5 +78,6 @@
     <outline text="Spatial Product Growth with GeoCalamito" title="Spatial Product Growth with GeoCalamito" description="" type="rss" version="RSS" htmlUrl="https://geocalamito.substack.com" xmlUrl="https://geocalamito.substack.com/feed"/>
     <outline text="Maps, Tattoos, and Geospatial Views" title="Maps, Tattoos, and Geospatial Views" description="" type="rss" version="RSS" htmlUrl="https://thespatialjefe.substack.com" xmlUrl="https://thespatialjefe.substack.com/feed"/>
     <outline text="Geomermaids" title="Geomermaids" description="" type="rss" version="RSS" htmlUrl="https://geomermaids.com" xmlUrl="https://geomermaids.com/rss.xml"/>
+    <outline text="Geospatial Jobs Clearinghouse" title="Geospatial Jobs Clearinghouse" description="" type="rss" version="RSS" htmlUrl="https://www.gjc.org/cgi-bin/rssjobs.pl" xmlUrl="https://www.gjc.org/cgi-bin/rssjobs.pl"/>
   </body>
 </opml>
