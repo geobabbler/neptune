@@ -79,5 +79,7 @@
     <outline text="Maps, Tattoos, and Geospatial Views" title="Maps, Tattoos, and Geospatial Views" description="" type="rss" version="RSS" htmlUrl="https://thespatialjefe.substack.com" xmlUrl="https://thespatialjefe.substack.com/feed"/>
     <outline text="Geomermaids" title="Geomermaids" description="" type="rss" version="RSS" htmlUrl="https://geomermaids.com" xmlUrl="https://geomermaids.com/rss.xml"/>
     <outline text="Geospatial Jobs Clearinghouse" title="Geospatial Jobs Clearinghouse" description="" type="rss" version="RSS" htmlUrl="https://www.gjc.org/cgi-bin/rssjobs.pl" xmlUrl="https://www.gjc.org/cgi-bin/rssjobs.pl"/>
+    <outline text="GIS Jobs" title="GIS Jobs" description="" type="rss" version="RSS" htmlUrl="https://www.gisjobs.com/rssjobs.php" xmlUrl="https://www.gisjobs.com/rssjobs.php"/>
+    <outline text="GeoSearch" title="GeoSearch" description="" type="rss" version="RSS" htmlUrl="https://geosearch.com" xmlUrl="https://geosearch.com/feed/"/>
   </body>
 </opml>
