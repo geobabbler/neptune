@@ -82,5 +82,6 @@
     <outline text="GIS Jobs" title="GIS Jobs" description="" type="rss" version="RSS" htmlUrl="https://www.gisjobs.com/rssjobs.php" xmlUrl="https://www.gisjobs.com/rssjobs.php"/>
     <outline text="GeoSearch" title="GeoSearch" description="" type="rss" version="RSS" htmlUrl="https://geosearch.com" xmlUrl="https://geosearch.com/feed/"/>
     <outline text="Geospatial Frontiers" title="Geospatial Frontiers" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org/geospatial-frontiers?format=rss" xmlUrl="https://projectgeospatial.org/geospatial-frontiers?format=rss"/>
+    <outline text="Spatialists" title="Spatialists" description="" type="rss" version="RSS" htmlUrl="https://spatialists.ch/index.xml" xmlUrl="https://spatialists.ch/index.xml"/>
   </body>
 </opml>
