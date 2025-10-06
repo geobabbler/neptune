@@ -29,7 +29,19 @@
         %>
             <dc:creator><%= creator %></dc:creator>
         <% } %>
-        <% if (item.sourceLink && item.sourceLink.trim() !== '') { %>
+        <%
+            let isValidUrl = false;
+
+            if (item.sourceLink && item.sourceLink.trim() !== '') {
+                try {
+                    new URL(item.sourceLink); // Will throw if invalid
+                    isValidUrl = true;
+                } catch (e) {
+                    isValidUrl = false;
+                }
+            }
+        %>
+        <% if (isValidUrl) { %>
             <source url="<%= item.sourceLink %>"><%= item.source %></source>
         <% } else { %>
             
