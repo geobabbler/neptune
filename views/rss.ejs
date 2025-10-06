@@ -7,20 +7,31 @@
         <atom:link href="http://geofeeds.me/feed" rel="self" type="application/rss+xml"/>
         <lastBuildDate><%= new Date().toUTCString() %></lastBuildDate>
         <% items.forEach(function(item) { %>
-            <item>
-                <title><%= item.source %> - <%= item.title %></title>
-                <description><![CDATA[<%- item.description %>]]></description>
-                <link><%= item.link %></link>
-                <guid><%= item.link %></guid>
-                <pubDate><%= new Date(item.pubDate).toUTCString() %></pubDate>
-                <% if (item.original.author && typeof item.original.author[0] === 'string') { %>
-                    <author><%= item.original.author[0] %></author>
-                <% } %>
-                <% if (item.original['dc:creator'] && typeof item.original['dc:creator'][0] === 'string') { %>
-                    <dc:creator><%= item.original['dc:creator'][0] %></dc:creator>
-                <% } %>
-                <source url="<%= item.sourceLink %>"><%= item.source %></source>
-            </item>
-        <% }); %>
+    <item>
+        <title><%= item.source %> - <%= item.title %></title>
+        <description><![CDATA[<%- item.description %>]]></description>
+        <link><%= item.link %></link>
+        <guid><%= item.link %></guid>
+        <pubDate><%= new Date(item.pubDate).toUTCString() %></pubDate>
+        <% 
+            let creator = null;
+
+            // Prefer dc:creator if available
+            if (item.original['dc:creator'] && typeof item.original['dc:creator'][0] === 'string') {
+                creator = item.original['dc:creator'][0];
+            } 
+            // Fallback to author if dc:creator is not present
+            else if (item.original.author && typeof item.original.author[0] === 'string') {
+                creator = item.original.author[0];
+            }
+
+            if (creator) { 
+        %>
+            <dc:creator><%= creator %></dc:creator>
+        <% } %>
+        <source url="<%= item.sourceLink %>"><%= item.source %></source>
+    </item>
+<% }); %>
+
     </channel>
 </rss> 
