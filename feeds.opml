@@ -5,7 +5,7 @@
   </head>
   <body>
     <outline text="geoMusings" title="geoMusings" type="rss" xmlUrl="https://blog.geomusings.com/feed"/>
-    <outline text="Spatially Adjusted" title="Spatially Adjusted" type="rss" xmlUrl="https://spatiallyadjusted.com/feed/"/>
+    <!-- <outline text="Spatially Adjusted" title="Spatially Adjusted" type="rss" xmlUrl="https://spatiallyadjusted.com/feed/"/> -->
     <outline text="Brian Maddox" title="Brian Maddox" type="rss" xmlUrl="https://brian.digitalmaddox.com/blog/?feed=rss2"/>
     <outline text="Esri" title="Esri" type="rss" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog"/>
     <outline text="Free and Open Source GIS Ramblings" title="Free and Open Source GIS Ramblings" description="Anita Graser's blog about free and open source GIS software" type="rss" version="RSS" htmlUrl="https://anitagraser.com/" xmlUrl="http://anitagraser.com/feed/"/>
@@ -33,7 +33,7 @@
     <!--<outline text="Bill Morris" title="Bill Morris" description="" type="rss" version="RSS" htmlUrl="https://billmorris.io/shoals" xmlUrl="https://billmorris.io/shoals/feed.xml"/>-->
     <outline text="North Road" title="North Road" description="" type="rss" version="RSS" htmlUrl="https://north-road.com" xmlUrl="https://north-road.com/feed/"/>
     <outline text="Something About Maps" title="Something About Maps" description="" type="rss" version="RSS" htmlUrl="https://somethingaboutmaps.wordpress.com" xmlUrl="https://somethingaboutmaps.wordpress.com/feed/"/>
-    <outline text="Taylor Geospatial Institute" title="Taylor Geospatial Institute" description="" type="rss" version="RSS" htmlUrl="https://taylorgeospatial.org" xmlUrl="https://taylorgeospatial.org/feed/"/>
+    <!-- <outline text="Taylor Geospatial Institute" title="Taylor Geospatial Institute" description="" type="rss" version="RSS" htmlUrl="https://taylorgeospatial.org" xmlUrl="https://taylorgeospatial.org/feed/"/> -->
     <outline text="Taylor Geospatial Engine" title="Taylor Geospatial Engine" description="" type="rss" version="RSS" htmlUrl="https://tgengine.org" xmlUrl="https://tgengine.org/feed/"/>
     <outline text="Chris Holmes" title="Chris Holmes" description="" type="rss" version="RSS" htmlUrl="https://medium.com/feed/@cholmes" xmlUrl="https://medium.com/feed/@cholmes"/>
     <outline text="Linda Stevens - Reimagining Geospatial" title="Linda Stevens - Reimagining Geospatial" description="" type="rss" version="RSS" htmlUrl="https://reimagininggeospatial.substack.com" xmlUrl="https://reimagininggeospatial.substack.com/feed"/>
@@ -49,7 +49,7 @@
     <outline text="MapBrief by Brian Timoney" title="MapBrief by Brian Timoney" description="" type="rss" version="RSS" htmlUrl="https://mapbrief.com" xmlUrl="https://mapbrief.com/feed/"/>
     <!--<outline text="Crunchy Data" title="Crunchy Data" description="" type="rss" version="RSS" htmlUrl="https://www.crunchydata.com" xmlUrl="https://www.crunchydata.com/blog/rss.xml"/>-->
     <outline text="OpenStreetMap Blog" title="OpenStreetMap Blog" description="" type="rss" version="RSS" htmlUrl="https://blogs.openstreetmap.org" xmlUrl="https://blogs.openstreetmap.org/rss20.xml"/>
-    <outline text="GrindGIS" title="GrindGIS" description="" type="rss" version="RSS" htmlUrl="https://grindgis.com" xmlUrl="https://grindgis.com/feed"/>
+    <outline text="GrindGIS" title="GrindGIS" description="" type="rss" version="RSS" htmlUrl="https://grindgis.com" xmlUrl="https://grindgis.com/?feed=rss2"/>
     <outline text="GIS Agents" title="GIS Agents" description="" type="rss" version="RSS" htmlUrl="https://www.gisagents.org" xmlUrl="https://www.gisagents.org/feeds/posts/default?alt=rss"/>
     <outline text="Geography Realm" title="Geography Realm" description="" type="rss" version="RSS" htmlUrl="https://www.geographyrealm.com" xmlUrl="https://www.geographyrealm.com/feed/"/>
     <outline text="Spatial Data Science" title="Spatial Data Science" description="" type="rss" version="RSS" htmlUrl="https://medium.com/feed/spatial-data-science" xmlUrl="https://medium.com/feed/spatial-data-science"/>
@@ -60,7 +60,7 @@
     <outline text="Spatial Edge" title="Spatial Edge" description="" type="rss" version="RSS" htmlUrl="https://www.spatialedge.co" xmlUrl="https://www.spatialedge.co/feed"/>
     <outline text="Spectral Reflectance" title="Spectral Reflectance" description="" type="rss" version="RSS" htmlUrl="https://www.spectralreflectance.space" xmlUrl="https://www.spectralreflectance.space/feed"/>
     <outline text="gadom.ski" title="gadom.ski" description="" type="rss" version="RSS" htmlUrl="https://www.gadom.ski" xmlUrl="https://www.gadom.ski/atom.xml"/>
-    <outline text="The Geospatial Index" title="The Geospatial Index" description="" type="rss" version="RSS" htmlUrl="https://www.geospatial.money" xmlUrl="https://www.geospatial.money/feed"/>
+    <!-- <outline text="The Geospatial Index" title="The Geospatial Index" description="" type="rss" version="RSS" htmlUrl="https://www.geospatial.money" xmlUrl="https://www.geospatial.money/feed"/> -->
     <outline text="ChandlerGeog" title="ChandlerGeog" description="" type="rss" version="RSS" htmlUrl="https://chandlergeog.wordpress.com" xmlUrl="https://chandlergeog.wordpress.com/feed/"/>
     <outline text="Maps Mania" title="Maps Mania" description="" type="rss" version="RSS" htmlUrl="https://googlemapsmania.blogspot.com" xmlUrl="https://googlemapsmania.blogspot.com/feeds/posts/default?alt=rss"/>
     <outline text="Project Geospatial" title="Project Geospatial" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org" xmlUrl="https://projectgeospatial.org/podcast-archive?format=rss"/>
@@ -83,5 +83,8 @@
     <outline text="GeoSearch" title="GeoSearch" description="" type="rss" version="RSS" htmlUrl="https://geosearch.com" xmlUrl="https://geosearch.com/feed/"/>
     <outline text="Geospatial Frontiers" title="Geospatial Frontiers" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org/geospatial-frontiers?format=rss" xmlUrl="https://projectgeospatial.org/geospatial-frontiers?format=rss"/>
     <outline text="Spatialists" title="Spatialists" description="" type="rss" version="RSS" htmlUrl="https://spatialists.ch/index.xml" xmlUrl="https://spatialists.ch/index.xml"/>
+    <outline text="Earth Imaging Journal" title="Earth Imaging Journal" description="" type="rss" version="RSS" htmlUrl="https://feeds.feedburner.com/EIJournal" xmlUrl="https://feeds.feedburner.com/EIJournal"/>
+    <outline text="Spatial Times" title="Spatial Times" description="" type="rss" version="RSS" htmlUrl="https://www.spatialtimes.com/rss.xml" xmlUrl="https://www.spatialtimes.com/rss.xml"/>
+    <outline text="Paul Shapley" title="Paul Shapley" description="" type="rss" version="RSS" htmlUrl="https://www.paulshapley.com/feeds/posts/default" xmlUrl="https://www.paulshapley.com/feeds/posts/default"/>
   </body>
 </opml>
