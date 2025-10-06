@@ -19,8 +19,8 @@
                 <% if (item.original['dc:creator'] && typeof item.original['dc:creator'][0] === 'string') { %>
                     <dc:creator><%= item.original['dc:creator'][0] %></dc:creator>
                 <% } %>
-                <source url="<%= item.link %>"><%= item.source %></source>
-                <sourceLink><%= item.sourceLink %></sourceLink>
+                <source url="<%= item.sourceLink %>"><%= item.source %></source>
+                <!--<sourceLink><%= item.sourceLink %></sourceLink>-->
             </item>
         <% }); %>
     </channel>
