@@ -29,9 +29,13 @@
         %>
             <dc:creator><%= creator %></dc:creator>
         <% } %>
-        <source url="<%= item.sourceLink %>"><%= item.source %></source>
+        <% if (item.sourceLink && item.sourceLink.trim() !== '') { %>
+            <source url="<%= item.sourceLink %>"><%= item.source %></source>
+        <% } else { %>
+            <source><%= item.source %></source>
+        <% } %>
     </item>
-<% }); %>
+    <% }); %>
 
     </channel>
 </rss> 
