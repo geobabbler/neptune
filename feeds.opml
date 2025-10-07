@@ -86,5 +86,8 @@
     <outline text="Earth Imaging Journal" title="Earth Imaging Journal" description="" type="rss" version="RSS" htmlUrl="https://feeds.feedburner.com/EIJournal" xmlUrl="https://feeds.feedburner.com/EIJournal"/>
     <outline text="Spatial Times" title="Spatial Times" description="" type="rss" version="RSS" htmlUrl="https://www.spatialtimes.com/rss.xml" xmlUrl="https://www.spatialtimes.com/rss.xml"/>
     <outline text="Paul Shapley" title="Paul Shapley" description="" type="rss" version="RSS" htmlUrl="https://www.paulshapley.com/feeds/posts/default" xmlUrl="https://www.paulshapley.com/feeds/posts/default"/>
+    <outline text="GIS Geography" title="GIS Geography" description="" type="rss" version="RSS" htmlUrl="https://gisgeography.com/feed/" xmlUrl="https://gisgeography.com/feed/"/>
+    <outline text="GeoCurrents" title="GeoCurrents" description="" type="rss" version="RSS" htmlUrl="https://www.geocurrents.info/feed/" xmlUrl="https://www.geocurrents.info/feed/"/>
+    <outline text="Spatial Thoughts" title="Spatial Thoughts" description="" type="rss" version="RSS" htmlUrl="https://spatialthoughts.com/feed/" xmlUrl="https://spatialthoughts.com/feed/"/>
   </body>
 </opml>
