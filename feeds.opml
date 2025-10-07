@@ -89,5 +89,7 @@
     <outline text="GIS Geography" title="GIS Geography" description="" type="rss" version="RSS" htmlUrl="https://gisgeography.com/feed/" xmlUrl="https://gisgeography.com/feed/"/>
     <outline text="GeoCurrents" title="GeoCurrents" description="" type="rss" version="RSS" htmlUrl="https://www.geocurrents.info/feed/" xmlUrl="https://www.geocurrents.info/feed/"/>
     <outline text="Spatial Thoughts" title="Spatial Thoughts" description="" type="rss" version="RSS" htmlUrl="https://spatialthoughts.com/feed/" xmlUrl="https://spatialthoughts.com/feed/"/>
+    <outline text="Overture Maps Foundation" title="Overture Maps Foundation" description="" type="rss" version="RSS" htmlUrl="https://overturemaps.org/feed/" xmlUrl="https://overturemaps.org/feed/"/>
+    <outline text="MapScaping" title="MapScaping" description="" type="rss" version="RSS" htmlUrl="https://mapscaping.com/feed/" xmlUrl="https://mapscaping.com/feed/"/>
   </body>
 </opml>
