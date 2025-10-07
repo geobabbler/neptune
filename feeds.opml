@@ -29,7 +29,7 @@
     <outline text="Mappery" title="Mappery" description="" type="rss" version="RSS" htmlUrl="https://mappery.org" xmlUrl="https://mappery.org/feed/"/>
     <outline text="Markus Neteler Blog" title="Markus Neteler Blog" description="" type="rss" version="RSS" htmlUrl="https://neteler.org/blog/" xmlUrl="https://neteler.org/feed/"/>
     <outline text="Adventures In Mapping" title="Adventures In Mapping" description="" type="rss" version="RSS" htmlUrl="https://adventuresinmapping.com" xmlUrl="https://adventuresinmapping.com/feed/"/>
-    <outline text="Robin Wilson's Blog" title="Robin Wilson's Blog" description="" type="rss" version="RSS" htmlUrl="https://feeds.feedburner.com/rtwilson/blog" xmlUrl="https://feeds.feedburner.com/rtwilson/blog"/>
+    <outline text="Robin Wilson's Blog" title="Robin Wilson's Blog" description="" type="rss" version="RSS" htmlUrl="https://blog.rtwilson.com/feed/" xmlUrl="https://blog.rtwilson.com/feed/"/>
     <!--<outline text="Bill Morris" title="Bill Morris" description="" type="rss" version="RSS" htmlUrl="https://billmorris.io/shoals" xmlUrl="https://billmorris.io/shoals/feed.xml"/>-->
     <outline text="North Road" title="North Road" description="" type="rss" version="RSS" htmlUrl="https://north-road.com" xmlUrl="https://north-road.com/feed/"/>
     <outline text="Something About Maps" title="Something About Maps" description="" type="rss" version="RSS" htmlUrl="https://somethingaboutmaps.wordpress.com" xmlUrl="https://somethingaboutmaps.wordpress.com/feed/"/>
