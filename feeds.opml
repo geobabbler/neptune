@@ -91,5 +91,6 @@
     <outline text="Spatial Thoughts" title="Spatial Thoughts" description="" type="rss" version="RSS" htmlUrl="https://spatialthoughts.com/feed/" xmlUrl="https://spatialthoughts.com/feed/"/>
     <outline text="Overture Maps Foundation" title="Overture Maps Foundation" description="" type="rss" version="RSS" htmlUrl="https://overturemaps.org/feed/" xmlUrl="https://overturemaps.org/feed/"/>
     <outline text="MapScaping" title="MapScaping" description="" type="rss" version="RSS" htmlUrl="https://mapscaping.com/feed/" xmlUrl="https://mapscaping.com/feed/"/>
+    <outline text="Wherobots" title="Wherobots" description="" type="rss" version="RSS" htmlUrl="https://wherobots.com/feed/" xmlUrl="https://wherobots.com/feed/"/>
   </body>
 </opml>
