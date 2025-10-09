@@ -94,5 +94,6 @@
     <outline text="Wherobots" title="Wherobots" description="" type="rss" version="RSS" htmlUrl="https://wherobots.com/feed/" xmlUrl="https://wherobots.com/feed/"/>
     <outline text="Dewey Dunnington" title="Dewey Dunnington" description="" type="rss" version="RSS" htmlUrl="https://dewey.dunnington.ca/post/index.xml" xmlUrl="https://dewey.dunnington.ca/post/index.xml"/>
     <outline text="Life in GIS" title="Life in GIS" description="" type="rss" version="RSS" htmlUrl="https://www.lifeingis.com/feed/" xmlUrl="https://www.lifeingis.com/feed/"/>
+    <outline text="Ubique (AGS)" title="Ubique (AGS)" description="" type="rss" version="RSS" htmlUrl="https://ubiqueags.org/feed/" xmlUrl="https://ubiqueags.org/feed/"/>
   </body>
 </opml>
