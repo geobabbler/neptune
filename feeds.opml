@@ -5,7 +5,7 @@
   </head>
   <body>
     <outline text="geoMusings" title="geoMusings" type="rss" xmlUrl="https://blog.geomusings.com/feed"/>
-    <!-- <outline text="Spatially Adjusted" title="Spatially Adjusted" type="rss" xmlUrl="https://spatiallyadjusted.com/feed/"/> -->
+    <outline text="Spatially Adjusted" title="Spatially Adjusted" type="rss" xmlUrl="https://spatiallyadjusted.com/feed.rss"/>
     <outline text="Brian Maddox" title="Brian Maddox" type="rss" xmlUrl="https://brian.digitalmaddox.com/blog/?feed=rss2"/>
     <outline text="Esri" title="Esri" type="rss" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog"/>
     <outline text="Free and Open Source GIS Ramblings" title="Free and Open Source GIS Ramblings" description="Anita Graser's blog about free and open source GIS software" type="rss" version="RSS" htmlUrl="https://anitagraser.com/" xmlUrl="http://anitagraser.com/feed/"/>
