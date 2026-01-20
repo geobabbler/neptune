@@ -706,7 +706,7 @@ app.get('/mcp/sse', async (req, res) => {
   }
 });
 
-// Handle POST to /mcp/sse (for http-first strategy)
+// Handle POST to /mcp/sse (for http-first strategy and streamable HTTP)
 app.post('/mcp/sse', async (req, res) => {
   try {
     // Try to get session ID from various sources
@@ -714,10 +714,10 @@ app.post('/mcp/sse', async (req, res) => {
                      req.headers['x-session-id'] || 
                      req.body?.sessionId;
     
-    console.log(`POST /mcp/sse received, sessionId: ${sessionId || 'none'}, active sessions: ${activeTransports.size}`);
+    console.log(`POST /mcp/sse received, sessionId: ${sessionId || 'none'}, active sessions: ${activeTransports.size}, body: ${JSON.stringify(req.body).substring(0, 100)}`);
     
     // Check if this is a message for an existing session
-    if (sessionId) {
+    if (sessionId && activeTransports.has(sessionId)) {
       const existingSession = activeTransports.get(sessionId);
       
       if (existingSession && existingSession.transport) {
@@ -730,28 +730,32 @@ app.post('/mcp/sse', async (req, res) => {
       }
     }
     
-    // If no existing session, try to find any active session (fallback)
-    const sessions = Array.from(activeTransports.keys());
-    if (sessions.length > 0) {
-      const latestSession = sessions[sessions.length - 1];
-      const { transport } = activeTransports.get(latestSession);
-      if (transport && typeof transport.handlePostMessage === 'function') {
-        console.log(`Routing POST to latest session: ${latestSession}`);
-        return await transport.handlePostMessage(req, res);
-      }
+    // If no existing session and this looks like an initial connection
+    // (has a JSON-RPC message in body), establish SSE connection
+    if (req.body && (req.body.method || req.body.jsonrpc)) {
+      // Generate new session ID
+      const newSessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      console.log(`Establishing new SSE connection via POST: ${newSessionId}`);
+      
+      // Establish SSE connection - this will change response headers to SSE
+      await establishSSEConnection(req, res, newSessionId);
+      
+      // The transport is now connected, and the initial message in req.body
+      // will be handled by the transport's message queue
+      // We don't need to manually process it here as the transport handles it
+    } else {
+      // No session and no message body - return error
+      res.status(400).json({ 
+        error: 'No active SSE session found',
+        message: 'Please establish SSE connection via GET /mcp/sse first, or include a JSON-RPC message in the POST body',
+        hint: 'For http-first strategy, POST with a JSON-RPC message to establish the connection'
+      });
     }
-    
-    // If no existing session, this might be an initial connection attempt
-    // Some clients POST first, then GET for SSE
-    // Return error indicating they need to establish SSE connection first
-    res.status(400).json({ 
-      error: 'No active SSE session found',
-      message: 'Please establish SSE connection via GET /mcp/sse first',
-      hint: 'The client should connect to GET /mcp/sse to establish the SSE stream, then POST messages to /mcp/messages'
-    });
   } catch (error) {
     console.error('Error handling POST to /mcp/sse:', error);
-    res.status(500).json({ error: error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ error: error.message });
+    }
   }
 });
 
