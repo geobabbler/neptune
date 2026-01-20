@@ -1,4 +1,5 @@
 const express = require('express');
+const https = require('https');
 const axios = require('axios');
 const xml2js = require('xml2js');
 const fs = require('fs');
@@ -10,12 +11,24 @@ const ejs = require('ejs');
 const RSS = require('rss');
 const { decode } = require('html-entities');
 
+// MCP Server imports
+const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
+const { SSEServerTransport } = require('@modelcontextprotocol/sdk/server/sse.js');
+const {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} = require('@modelcontextprotocol/sdk/types.js');
+const mcpHelpers = require('./mcp-helpers.js');
+
 const app = express();
 const port = 8080;
 
 // Add EJS configuration
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Middleware for parsing JSON (needed for MCP messages)
+app.use(express.json());
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -397,7 +410,375 @@ app.get('/version', (req, res) => {
     });
 });
 
-// Start server
-app.listen(port, () => {
-  console.log(`Feed aggregator app listening at http://localhost:${port}`);
+// ============================================================================
+// MCP Server Setup (HTTP/SSE Transport)
+// ============================================================================
+
+// Initialize MCP Server
+const mcpServer = new Server(
+  {
+    name: 'neptune-feed-cache',
+    version: '1.0.0',
+  },
+  {
+    capabilities: {
+      tools: {},
+    },
+  }
+);
+
+// List available tools
+mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [
+      {
+        name: 'list_cached_feeds',
+        description: 'List all feeds that are currently cached, including their titles, URLs, and item counts.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
+        name: 'get_feed_items',
+        description: 'Get all items from a specific cached feed by its URL.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            feedUrl: {
+              type: 'string',
+              description: 'The URL of the feed to retrieve items from',
+            },
+            limit: {
+              type: 'number',
+              description: 'Maximum number of items to return (default: 50)',
+            },
+          },
+          required: ['feedUrl'],
+        },
+      },
+      {
+        name: 'search_feed_items',
+        description: 'Search across all cached feeds for items matching a query string. Searches in titles, descriptions, and source names.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query string',
+            },
+            limit: {
+              type: 'number',
+              description: 'Maximum number of results to return (default: 20)',
+            },
+          },
+          required: ['query'],
+        },
+      },
+      {
+        name: 'get_aggregated_feed',
+        description: 'Get the aggregated feed from the output directory (all feeds combined).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            limit: {
+              type: 'number',
+              description: 'Maximum number of items to return (default: 50)',
+            },
+          },
+        },
+      },
+    ],
+  };
 });
+
+// Handle tool calls
+mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  const opmlFile = path.join(__dirname, 'feeds.opml');
+
+  try {
+    switch (name) {
+      case 'list_cached_feeds': {
+        const feeds = await mcpHelpers.getAllCachedFeeds(cacheDir, opmlFile);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(feeds, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'get_feed_items': {
+        const { feedUrl, limit = 50 } = args;
+        const cachePath = mcpHelpers.getCachePath(cacheDir, feedUrl);
+        const parsedFeed = await mcpHelpers.parseCachedFeed(cachePath);
+        
+        if (!parsedFeed) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `Feed not found in cache: ${feedUrl}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        const feedInfo = mcpHelpers.extractFeedItems(parsedFeed);
+        if (!feedInfo) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `Could not parse feed: ${feedUrl}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        const items = feedInfo.items.slice(0, limit);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                feed: {
+                  title: feedInfo.title,
+                  link: feedInfo.link,
+                },
+                items: items,
+                totalItems: feedInfo.items.length,
+                returnedItems: items.length,
+              }, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'search_feed_items': {
+        const { query, limit = 20 } = args;
+        const results = await mcpHelpers.searchCachedFeeds(cacheDir, opmlFile, query, limit);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                query: query,
+                results: results,
+                count: results.length,
+              }, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'get_aggregated_feed': {
+        const { limit = 50 } = args;
+        const aggregatedFile = path.join(outputDir, 'aggregated.xml');
+        
+        if (!fs.existsSync(aggregatedFile)) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Aggregated feed not found. The feed aggregator may need to run first.',
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        const rssFeed = fs.readFileSync(aggregatedFile, 'utf8');
+        const parsedFeed = await xml2js.parseStringPromise(rssFeed);
+        const feedInfo = mcpHelpers.extractFeedItems(parsedFeed);
+        
+        if (!feedInfo) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Could not parse aggregated feed',
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        const items = feedInfo.items.slice(0, limit);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                feed: {
+                  title: feedInfo.title || 'Aggregated Feed',
+                  link: feedInfo.link || '',
+                },
+                items: items,
+                totalItems: feedInfo.items.length,
+                returnedItems: items.length,
+              }, null, 2),
+            },
+          ],
+        };
+      }
+
+      default:
+        throw new Error(`Unknown tool: ${name}`);
+    }
+  } catch (error) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Error executing tool ${name}: ${error.message}`,
+        },
+      ],
+      isError: true,
+    };
+  }
+});
+
+// Store active SSE transports (keyed by session ID)
+const activeTransports = new Map();
+
+// MCP SSE Endpoint - establishes the Server-Sent Events connection
+app.get('/mcp/sse', async (req, res) => {
+  try {
+    // Generate a session ID for this connection
+    const sessionId = req.query.sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Set up SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Cache-Control');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+
+    // Create SSE transport with the message endpoint URL
+    // The transport will handle both directions of communication
+    const transport = new SSEServerTransport('/mcp/messages', res);
+    activeTransports.set(sessionId, { transport, res });
+
+    // Connect the MCP server to this transport
+    await mcpServer.connect(transport);
+
+    // Send initial connection message
+    res.write(`data: ${JSON.stringify({ type: 'connection', sessionId })}\n\n`);
+
+    // Clean up on client disconnect
+    req.on('close', () => {
+      console.log(`MCP SSE connection closed: ${sessionId}`);
+      activeTransports.delete(sessionId);
+      if (transport && typeof transport.close === 'function') {
+        transport.close();
+      }
+    });
+
+    console.log(`MCP SSE connection established: ${sessionId}`);
+  } catch (error) {
+    console.error('Error establishing MCP SSE connection:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to establish SSE connection' });
+    }
+  }
+});
+
+// MCP Messages Endpoint - handles POST requests from the client
+app.post('/mcp/messages', async (req, res) => {
+  try {
+    const sessionId = req.query.sessionId || req.headers['x-session-id'];
+    
+    if (!sessionId) {
+      // If no session ID, try to find the most recent transport
+      // In a production environment, you'd use proper session management
+      const sessions = Array.from(activeTransports.keys());
+      if (sessions.length === 0) {
+        return res.status(400).json({ 
+          error: 'No active SSE session. Please connect to /mcp/sse first.' 
+        });
+      }
+      // Use the most recent session (simple fallback)
+      const latestSession = sessions[sessions.length - 1];
+      const { transport } = activeTransports.get(latestSession);
+      
+      if (transport && typeof transport.handlePostMessage === 'function') {
+        return await transport.handlePostMessage(req, res);
+      }
+    } else {
+      const session = activeTransports.get(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: 'Session not found' });
+      }
+      
+      const { transport } = session;
+      if (transport && typeof transport.handlePostMessage === 'function') {
+        return await transport.handlePostMessage(req, res);
+      }
+    }
+    
+    // Fallback: handle message manually if transport doesn't have handlePostMessage
+    res.json({ 
+      status: 'ok',
+      message: 'Message received. Ensure SSE connection is active at /mcp/sse'
+    });
+  } catch (error) {
+    console.error('Error handling MCP message:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// MCP endpoint for Claude Desktop and other clients
+// This is the main entry point that clients should connect to
+app.get('/mcp', async (req, res) => {
+  // Redirect to SSE endpoint or provide connection info
+  res.json({
+    name: 'neptune-feed-cache',
+    version: '1.0.0',
+    transport: 'sse',
+    endpoints: {
+      sse: '/mcp/sse',
+      messages: '/mcp/messages'
+    }
+  });
+});
+
+// Start server
+const useHttps = process.env.USE_HTTPS === 'true' || process.argv.includes('--https');
+
+if (useHttps) {
+  const certDir = path.join(__dirname, 'certs');
+  const keyPath = path.join(certDir, 'key.pem');
+  const certPath = path.join(certDir, 'cert.pem');
+
+  // Check if certificates exist
+  if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
+    console.error('❌ SSL certificates not found!');
+    console.error('   Run: node generate-cert.js');
+    console.error('   Or set USE_HTTPS=false to use HTTP');
+    process.exit(1);
+  }
+
+  const options = {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath),
+  };
+
+  https.createServer(options, app).listen(port, () => {
+    console.log(`✅ Feed aggregator app listening at https://localhost:${port}`);
+    console.log(`✅ MCP server available at https://localhost:${port}/mcp`);
+    console.log(`\n⚠️  Using self-signed certificate. Browsers will show a security warning.`);
+    console.log(`   Click "Advanced" → "Proceed to localhost" to continue.`);
+  });
+} else {
+  app.listen(port, () => {
+    console.log(`Feed aggregator app listening at http://localhost:${port}`);
+    console.log(`MCP server available at http://localhost:${port}/mcp`);
+  });
+}

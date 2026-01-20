@@ -5,9 +5,14 @@
     "main": "app.js",
     "scripts": {
         "start": "node app.js",
-        "go": "node --env-file=.env app.js"
+        "start:https": "node app.js --https",
+        "go": "node app.js",
+        "go:https": "node app.js --https",
+        "mcp": "node mcp-server.js",
+        "generate-cert": "node generate-cert.js"
     },
     "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.0.4",
         "axios": "^1.3.4",
         "cheerio": "^1.0.0-rc.12",
         "ejs": "^3.1.10",
