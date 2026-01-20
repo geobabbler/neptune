@@ -660,15 +660,19 @@ async function establishSSEConnection(req, res, sessionId) {
 
   // Create SSE transport
   // The transport constructor takes the message endpoint path where POST requests go
-  // We'll use /mcp/messages for POST, but also handle POST on /mcp/sse
-  const transport = new SSEServerTransport('/mcp/messages', res);
+  // We MUST include the sessionId in the endpoint URL so the transport sends it in the endpoint event
+  const messageEndpoint = `/mcp/messages?sessionId=${encodeURIComponent(sessionId)}`;
+  const transport = new SSEServerTransport(messageEndpoint, res);
   activeTransports.set(sessionId, { transport, res, sessionId, createdAt: Date.now() });
+
+  console.log(`Created transport with sessionId: ${sessionId}, messageEndpoint: ${messageEndpoint}`);
 
   // Connect the MCP server to this transport
   await mcpServer.connect(transport);
 
-  // Send initial connection message with session ID
-  res.write(`data: ${JSON.stringify({ type: 'connection', sessionId })}\n\n`);
+  // Note: The transport will automatically send an 'endpoint' event with the messageEndpoint URL
+  // which includes our sessionId, so the client will receive the correct session ID
+  // The endpoint event will be: event: endpoint\ndata: /mcp/messages?sessionId=session-...
 
   // Send periodic heartbeat to keep connection alive
   const heartbeatInterval = setInterval(() => {
