@@ -658,6 +658,41 @@ async function establishSSEConnection(req, res, sessionId) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
 
+  // Create a wrapper around the response to intercept and modify the endpoint event
+  // The SSEServerTransport may generate its own UUID, so we need to replace it with our sessionId
+  const originalWrite = res.write.bind(res);
+  let endpointEventIntercepted = false;
+  
+  res.write = function(chunk, encoding, callback) {
+    const data = chunk.toString();
+    
+    // Intercept the endpoint event and replace any sessionId with ours
+    if (!endpointEventIntercepted && data.includes('event: endpoint')) {
+      endpointEventIntercepted = true;
+      
+      // Replace any sessionId in the endpoint URL with our sessionId
+      // Handle both formats: sessionId=UUID and sessionId=session-TIMESTAMP-RANDOM
+      // Match: sessionId= followed by any characters until &, space, newline, or end
+      const modifiedData = data.replace(
+        /(sessionId=)([^&\s\n]+)/g,
+        (match, prefix, oldSessionId) => {
+          console.log(`Intercepted endpoint event, replacing sessionId: ${oldSessionId} -> ${sessionId}`);
+          return prefix + encodeURIComponent(sessionId);
+        }
+      );
+      
+      const originalEndpoint = data.match(/data: [^\n]+/)?.[0] || 'not found';
+      const modifiedEndpoint = modifiedData.match(/data: [^\n]+/)?.[0] || 'not found';
+      console.log(`Original endpoint: ${originalEndpoint}`);
+      console.log(`Modified endpoint: ${modifiedEndpoint}`);
+      
+      return originalWrite(modifiedData, encoding, callback);
+    }
+    
+    // After endpoint event is intercepted or if it's not an endpoint event, write normally
+    return originalWrite(chunk, encoding, callback);
+  };
+
   // Create SSE transport
   // The transport constructor takes the message endpoint path where POST requests go
   // We MUST include the sessionId in the endpoint URL so the transport sends it in the endpoint event
@@ -670,8 +705,7 @@ async function establishSSEConnection(req, res, sessionId) {
   // Connect the MCP server to this transport
   await mcpServer.connect(transport);
 
-  // Note: The transport will automatically send an 'endpoint' event with the messageEndpoint URL
-  // which includes our sessionId, so the client will receive the correct session ID
+  // Note: We've intercepted the endpoint event to ensure it uses our sessionId
   // The endpoint event will be: event: endpoint\ndata: /mcp/messages?sessionId=session-...
 
   // Send periodic heartbeat to keep connection alive
