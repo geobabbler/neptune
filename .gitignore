@@ -6,6 +6,9 @@ package-lock.json
 cache/
 output/
 
+# SSL certificates (local development)
+certs/
+
 # Environment variables
 .env
 .env.local
