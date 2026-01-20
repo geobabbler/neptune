@@ -647,41 +647,57 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 // Store active SSE transports (keyed by session ID)
 const activeTransports = new Map();
 
-// MCP SSE Endpoint - establishes the Server-Sent Events connection
+// Helper to establish SSE connection
+async function establishSSEConnection(req, res, sessionId) {
+  // Set up SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Cache-Control, Content-Type, X-Session-Id');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+
+  // Create SSE transport
+  // The transport constructor takes the message endpoint path where POST requests go
+  // We'll use /mcp/messages for POST, but also handle POST on /mcp/sse
+  const transport = new SSEServerTransport('/mcp/messages', res);
+  activeTransports.set(sessionId, { transport, res, sessionId, createdAt: Date.now() });
+
+  // Connect the MCP server to this transport
+  await mcpServer.connect(transport);
+
+  // Send initial connection message with session ID
+  res.write(`data: ${JSON.stringify({ type: 'connection', sessionId })}\n\n`);
+
+  // Send periodic heartbeat to keep connection alive
+  const heartbeatInterval = setInterval(() => {
+    if (!res.destroyed) {
+      res.write(': heartbeat\n\n');
+    } else {
+      clearInterval(heartbeatInterval);
+    }
+  }, 30000); // Every 30 seconds
+
+  // Clean up on client disconnect
+  req.on('close', () => {
+    console.log(`MCP SSE connection closed: ${sessionId}`);
+    clearInterval(heartbeatInterval);
+    activeTransports.delete(sessionId);
+    if (transport && typeof transport.close === 'function') {
+      transport.close();
+    }
+  });
+
+  console.log(`MCP SSE connection established: ${sessionId} (active sessions: ${activeTransports.size})`);
+}
+
+// MCP SSE Endpoint - handles both GET (SSE stream) and POST (messages)
 app.get('/mcp/sse', async (req, res) => {
   try {
     // Generate a session ID for this connection
     const sessionId = req.query.sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Set up SSE headers
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Cache-Control');
-    res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
-
-    // Create SSE transport with the message endpoint URL
-    // The transport will handle both directions of communication
-    const transport = new SSEServerTransport('/mcp/messages', res);
-    activeTransports.set(sessionId, { transport, res });
-
-    // Connect the MCP server to this transport
-    await mcpServer.connect(transport);
-
-    // Send initial connection message
-    res.write(`data: ${JSON.stringify({ type: 'connection', sessionId })}\n\n`);
-
-    // Clean up on client disconnect
-    req.on('close', () => {
-      console.log(`MCP SSE connection closed: ${sessionId}`);
-      activeTransports.delete(sessionId);
-      if (transport && typeof transport.close === 'function') {
-        transport.close();
-      }
-    });
-
-    console.log(`MCP SSE connection established: ${sessionId}`);
+    await establishSSEConnection(req, res, sessionId);
   } catch (error) {
     console.error('Error establishing MCP SSE connection:', error);
     if (!res.headersSent) {
@@ -690,14 +706,67 @@ app.get('/mcp/sse', async (req, res) => {
   }
 });
 
+// Handle POST to /mcp/sse (for http-first strategy)
+app.post('/mcp/sse', async (req, res) => {
+  try {
+    // Try to get session ID from various sources
+    const sessionId = req.query.sessionId || 
+                     req.headers['x-session-id'] || 
+                     req.body?.sessionId;
+    
+    console.log(`POST /mcp/sse received, sessionId: ${sessionId || 'none'}, active sessions: ${activeTransports.size}`);
+    
+    // Check if this is a message for an existing session
+    if (sessionId) {
+      const existingSession = activeTransports.get(sessionId);
+      
+      if (existingSession && existingSession.transport) {
+        // Handle message for existing session
+        const { transport } = existingSession;
+        if (transport && typeof transport.handlePostMessage === 'function') {
+          console.log(`Routing POST to existing session: ${sessionId}`);
+          return await transport.handlePostMessage(req, res);
+        }
+      }
+    }
+    
+    // If no existing session, try to find any active session (fallback)
+    const sessions = Array.from(activeTransports.keys());
+    if (sessions.length > 0) {
+      const latestSession = sessions[sessions.length - 1];
+      const { transport } = activeTransports.get(latestSession);
+      if (transport && typeof transport.handlePostMessage === 'function') {
+        console.log(`Routing POST to latest session: ${latestSession}`);
+        return await transport.handlePostMessage(req, res);
+      }
+    }
+    
+    // If no existing session, this might be an initial connection attempt
+    // Some clients POST first, then GET for SSE
+    // Return error indicating they need to establish SSE connection first
+    res.status(400).json({ 
+      error: 'No active SSE session found',
+      message: 'Please establish SSE connection via GET /mcp/sse first',
+      hint: 'The client should connect to GET /mcp/sse to establish the SSE stream, then POST messages to /mcp/messages'
+    });
+  } catch (error) {
+    console.error('Error handling POST to /mcp/sse:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // MCP Messages Endpoint - handles POST requests from the client
 app.post('/mcp/messages', async (req, res) => {
   try {
-    const sessionId = req.query.sessionId || req.headers['x-session-id'];
+    // Try multiple ways to get session ID
+    const sessionId = req.query.sessionId || 
+                     req.headers['x-session-id'] ||
+                     req.body?.sessionId;
+    
+    console.log(`POST /mcp/messages received, sessionId: ${sessionId || 'none'}, active sessions: ${activeTransports.size}`);
     
     if (!sessionId) {
       // If no session ID, try to find the most recent transport
-      // In a production environment, you'd use proper session management
       const sessions = Array.from(activeTransports.keys());
       if (sessions.length === 0) {
         return res.status(400).json({ 
@@ -709,21 +778,28 @@ app.post('/mcp/messages', async (req, res) => {
       const { transport } = activeTransports.get(latestSession);
       
       if (transport && typeof transport.handlePostMessage === 'function') {
+        console.log(`Routing POST /mcp/messages to latest session: ${latestSession}`);
         return await transport.handlePostMessage(req, res);
       }
     } else {
       const session = activeTransports.get(sessionId);
       if (!session) {
-        return res.status(404).json({ error: 'Session not found' });
+        console.log(`Session not found: ${sessionId}, available sessions: ${Array.from(activeTransports.keys()).join(', ')}`);
+        return res.status(404).json({ 
+          error: 'Session not found. Please establish SSE connection first.',
+          availableSessions: Array.from(activeTransports.keys())
+        });
       }
       
       const { transport } = session;
       if (transport && typeof transport.handlePostMessage === 'function') {
+        console.log(`Routing POST /mcp/messages to session: ${sessionId}`);
         return await transport.handlePostMessage(req, res);
       }
     }
     
     // Fallback: handle message manually if transport doesn't have handlePostMessage
+    console.log('Transport does not have handlePostMessage method');
     res.json({ 
       status: 'ok',
       message: 'Message received. Ensure SSE connection is active at /mcp/sse'
@@ -732,6 +808,14 @@ app.post('/mcp/messages', async (req, res) => {
     console.error('Error handling MCP message:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// Handle OPTIONS for CORS preflight
+app.options('/mcp/sse', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Session-Id');
+  res.status(200).end();
 });
 
 // MCP endpoint for Claude Desktop and other clients
