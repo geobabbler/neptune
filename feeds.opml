@@ -98,5 +98,6 @@
     <outline text="PolicyMap" title="PolicyMap" type="rss" xmlUrl="https://www.policymap.com/resources/blog/feed"/>
     <outline text="VertiGIS" title="VertiGIS" type="rss" xmlUrl="https://www.vertigis.com/vertigis_blog/feed/"/>
     <outline text="Sanborn" title="Sanborn" type="rss" xmlUrl="https://sanborn.com/feed/"/>
+    <outline text="Lutra Consulting" title="Lutra Consulting" description="" type="rss" version="RSS" htmlUrl="https://www.lutraconsulting.co.uk" xmlUrl="https://bsky.app/profile/did:plc:c7rmuyp7g2uertpax55btuej/rss"/>
   </body>
 </opml>
