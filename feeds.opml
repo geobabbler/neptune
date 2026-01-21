@@ -60,7 +60,7 @@
     <outline text="Spatial Edge" title="Spatial Edge" description="" type="rss" version="RSS" htmlUrl="https://www.spatialedge.co" xmlUrl="https://www.spatialedge.co/feed"/>
     <outline text="Spectral Reflectance" title="Spectral Reflectance" description="" type="rss" version="RSS" htmlUrl="https://www.spectralreflectance.space" xmlUrl="https://www.spectralreflectance.space/feed"/>
     <outline text="gadom.ski" title="gadom.ski" description="" type="rss" version="RSS" htmlUrl="https://www.gadom.ski" xmlUrl="https://www.gadom.ski/atom.xml"/>
-    <!-- <outline text="The Geospatial Index" title="The Geospatial Index" description="" type="rss" version="RSS" htmlUrl="https://www.geospatial.money" xmlUrl="https://www.geospatial.money/feed"/> -->
+    <outline text="Geospatial FM" title="Geospatial FM" description="" type="rss" version="RSS" htmlUrl="https://www.geospatial.fm" xmlUrl="https://www.geospatial.fm/feed"/>
     <outline text="ChandlerGeog" title="ChandlerGeog" description="" type="rss" version="RSS" htmlUrl="https://chandlergeog.wordpress.com" xmlUrl="https://chandlergeog.wordpress.com/feed/"/>
     <outline text="Maps Mania" title="Maps Mania" description="" type="rss" version="RSS" htmlUrl="https://googlemapsmania.blogspot.com" xmlUrl="https://googlemapsmania.blogspot.com/feeds/posts/default?alt=rss"/>
     <outline text="Project Geospatial" title="Project Geospatial" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org" xmlUrl="https://projectgeospatial.org/podcast-archive?format=rss"/>
@@ -91,9 +91,12 @@
     <outline text="Spatial Thoughts" title="Spatial Thoughts" description="" type="rss" version="RSS" htmlUrl="https://spatialthoughts.com/feed/" xmlUrl="https://spatialthoughts.com/feed/"/>
     <outline text="Overture Maps Foundation" title="Overture Maps Foundation" description="" type="rss" version="RSS" htmlUrl="https://overturemaps.org/feed/" xmlUrl="https://overturemaps.org/feed/"/>
     <outline text="MapScaping" title="MapScaping" description="" type="rss" version="RSS" htmlUrl="https://mapscaping.com/feed/" xmlUrl="https://mapscaping.com/feed/"/>
-    <outline text="Wherobots" title="Wherobots" description="" type="rss" version="RSS" htmlUrl="https://wherobots.com/feed/" xmlUrl="https://wherobots.com/feed/"/>
+    <!--<outline text="Wherobots" title="Wherobots" description="" type="rss" version="RSS" htmlUrl="https://wherobots.com/feed/" xmlUrl="https://wherobots.com/feed/"/>-->
     <outline text="Dewey Dunnington" title="Dewey Dunnington" description="" type="rss" version="RSS" htmlUrl="https://dewey.dunnington.ca/post/index.xml" xmlUrl="https://dewey.dunnington.ca/post/index.xml"/>
     <outline text="Life in GIS" title="Life in GIS" description="" type="rss" version="RSS" htmlUrl="https://www.lifeingis.com/feed/" xmlUrl="https://www.lifeingis.com/feed/"/>
     <outline text="Ubique (AGS)" title="Ubique (AGS)" description="" type="rss" version="RSS" htmlUrl="https://ubiqueags.org/feed/" xmlUrl="https://ubiqueags.org/feed/"/>
+    <outline text="PolicyMap" title="PolicyMap" type="rss" xmlUrl="https://www.policymap.com/resources/blog/feed"/>
+    <outline text="VertiGIS" title="VertiGIS" type="rss" xmlUrl="https://www.vertigis.com/vertigis_blog/feed/"/>
+    <outline text="Sanborn" title="Sanborn" type="rss" xmlUrl="https://sanborn.com/feed/"/>
   </body>
 </opml>
