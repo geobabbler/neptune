@@ -25,6 +25,11 @@
                     day: 'numeric' 
                 }) %></time>
             </div>
+            <% if (item.imageUrl) { %>
+                <div class="feed-image">
+                    <img src="<%= item.imageUrl %>" alt="<%= item.title %>" loading="lazy" />
+                </div>
+            <% } %>
             <div class="feed-description">
                 <%- item.description %>
             </div>
