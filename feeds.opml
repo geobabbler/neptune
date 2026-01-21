@@ -4,8 +4,8 @@
     <title>Sample Feeds</title>
   </head>
   <body>
-    <outline text="geoMusings" title="geoMusings" type="rss" xmlUrl="https://blog.geomusings.com/feed"/>
-    <outline text="Spatially Adjusted" title="Spatially Adjusted" type="rss" xmlUrl="https://spatiallyadjusted.com/feed.rss"/>
+    <outline text="geoMusings" title="geoMusings" type="rss" xmlUrl="https://blog.geomusings.com/feed" defaultImageUrl="https://blog.geomusings.com/wp-content/uploads/2024/03/mj_aerail4.webp"/>
+    <outline text="Spatially Adjusted" title="Spatially Adjusted" type="rss" xmlUrl="https://spatiallyadjusted.com/feed.rss" defaultImageUrl="https://cdn.blot.im/blog_791b03b88aed498a8af63e01310173c0/_avatars/038d6c14-5a67-48c8-baee-7cd8bcd28699.jpg"/>
     <outline text="Brian Maddox" title="Brian Maddox" type="rss" xmlUrl="https://brian.digitalmaddox.com/blog/?feed=rss2"/>
     <outline text="Esri" title="Esri" type="rss" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog"/>
     <outline text="Free and Open Source GIS Ramblings" title="Free and Open Source GIS Ramblings" description="Anita Graser's blog about free and open source GIS software" type="rss" version="RSS" htmlUrl="https://anitagraser.com/" xmlUrl="http://anitagraser.com/feed/"/>
@@ -18,11 +18,11 @@
 	  <outline text="QGIS.org blog" title="QGIS.org blog" description="" type="rss" version="RSS" htmlUrl="https://blog.qgis.org/" xmlUrl="https://blog.qgis.org/feed/"/>
     <outline text="Spatial Leadership with Bill Dollins" title="Spatial Leadership with Bill Dollins" description="" type="rss" version="RSS" htmlUrl="https://billdollins.substack.com/" xmlUrl="https://billdollins.substack.com/feed"/>
 	  <outline text="Strategic Geospatial" title="Strategic Geospatial" description="" type="rss" version="RSS" htmlUrl="https://www.strategicgeospatial.com/" xmlUrl="https://www.strategicgeospatial.com/feed"/>
-    <outline text="Development Seed" title="Development Seed" description="" type="rss" version="RSS" htmlUrl="https://developmentseed.org/" xmlUrl="https://developmentseed.org/rss.xml"/>
+    <outline text="Development Seed" title="Development Seed" description="" type="rss" version="RSS" htmlUrl="https://developmentseed.org/" xmlUrl="https://developmentseed.org/rss.xml" defaultImageUrl="https://devseed.com/aiaia-docs/assets/graphics/content/dev-seed-logo-test.png" />
     <outline text="Cloud Native Geo" title="Cloud Native Geo" description="" type="rss" version="RSS" htmlUrl="https://cloudnativegeo.org/" xmlUrl="https://cloudnativegeo.org/blog/index.xml"/>
     <outline text="OSGeo" title="OSGeo" description="" type="rss" version="RSS" htmlUrl="https://www.osgeo.org/" xmlUrl="https://www.osgeo.org/feed/"/>
     <outline text="Open Geospatial Consortium" title="Open Geospatial Consortium" description="" type="rss" version="RSS" htmlUrl="https://www.ogc.org/" xmlUrl="https://www.ogc.org/feed/"/>
-    <outline text="Map Room Blog" title="Map Room Blog" description="" type="rss" version="RSS" htmlUrl="https://www.maproomblog.com/" xmlUrl="https://www.maproomblog.com/feed/"/>
+    <outline text="Map Room Blog" title="Map Room Blog" description="" type="rss" version="RSS" htmlUrl="https://www.maproomblog.com/" xmlUrl="https://www.maproomblog.com/feed/" defaultImageUrl="https://www.maproomblog.com/xq/wp-content/uploads/2024/04/cropped-header-image-2024-04s.png"/>
     <outline text="North River Geographic" title="North River Geographic" description="" type="rss" version="RSS" htmlUrl="https://www.northrivergeographic.com/" xmlUrl="https://www.northrivergeographic.com/feed/"/>
     <outline text="GIS Hub" title="GIS Hub" description="" type="rss" version="RSS" htmlUrl="https://blog.gishub.org/" xmlUrl="https://blog.gishub.org/rss.xml"/>
     <outline text="GeomMob" title="GeoMob" description="" type="rss" version="RSS" htmlUrl="https://thegeomob.com/" xmlUrl="https://thegeomob.com/feed.xml"/>
@@ -44,7 +44,7 @@
     <outline text="SparkGeo" title="SparkGeo" description="" type="rss" version="RSS" htmlUrl="https://sparkgeo.com" xmlUrl="https://sparkgeo.com/feed/"/>
     <outline text="Paul Shapley" title="Paul Shapley" description="" type="rss" version="RSS" htmlUrl="https://www.paulshapley.com" xmlUrl="https://www.paulshapley.com/feeds/posts/default?alt=rss"/>
     <outline text="Decision-Making Information Resources and Solutions" title="Decision-Making Information Resources and Solutions" description="" type="rss" version="RSS" htmlUrl="https://proximityone.wordpress.com" xmlUrl="https://proximityone.wordpress.com/feed/"/>
-    <outline text="GeoSolutions Group" title="GeoSolutions Group" description="" type="rss" version="RSS" htmlUrl="https://www.geosolutionsgroup.com" xmlUrl="https://www.geosolutionsgroup.com/category/blog/feed/"/>
+    <outline text="GeoSolutions Group" title="GeoSolutions Group" description="" type="rss" version="RSS" htmlUrl="https://www.geosolutionsgroup.com" xmlUrl="https://www.geosolutionsgroup.com/category/blog/feed/" defaultImageUrl="https://www.geosolutionsgroup.com/wp-content/themes/zaki/img/logo.png" />
     <outline text="T-Kartor" title="T-Kartor" description="" type="rss" version="RSS" htmlUrl="https://www.t-kartor.com" xmlUrl="https://www.t-kartor.com/feed/rss2"/>
     <outline text="MapBrief by Brian Timoney" title="MapBrief by Brian Timoney" description="" type="rss" version="RSS" htmlUrl="https://mapbrief.com" xmlUrl="https://mapbrief.com/feed/"/>
     <!--<outline text="Crunchy Data" title="Crunchy Data" description="" type="rss" version="RSS" htmlUrl="https://www.crunchydata.com" xmlUrl="https://www.crunchydata.com/blog/rss.xml"/>-->
@@ -72,14 +72,14 @@
     <outline text="Christopher Ren" title="Christopher Ren" description="" type="rss" version="RSS" htmlUrl="https://christopherren.substack.com" xmlUrl="https://christopherren.substack.com/feed"/>
     <outline text="Geospatial Digest" title="Geospatial Digest" description="" type="rss" version="RSS" htmlUrl="https://geospatialdigest.substack.com" xmlUrl="https://geospatialdigest.substack.com/feed"/>
     <outline text="GeoAI and the Law" title="GeoAI and the Law" description="" type="rss" version="RSS" htmlUrl="https://geospatiallaw.substack.com" xmlUrl="https://geospatiallaw.substack.com/feed"/>
-    <outline text="Cercana Systems" title="Cercana Systems" description="" type="rss" version="RSS" htmlUrl="https://cercanasystems.com" xmlUrl="https://cercanasystems.com/feed/"/>
+    <outline text="Cercana Systems" title="Cercana Systems" description="" type="rss" version="RSS" htmlUrl="https://cercanasystems.com" xmlUrl="https://cercanasystems.com/feed/" defaultImageUrl="https://cercanasystems.com/wp-content/uploads/2025/09/cercana-logo-std-primary-xl-2000x439.png" />
     <outline text="Justin Meyers - Revolutionary GIS" title="Justin Meyers - Revolutionary GIS" description="" type="rss" version="RSS" htmlUrl="https://revolutionarygis.wordpress.com" xmlUrl="https://revolutionarygis.wordpress.com/feed/"/>
     <outline text="Oslandia" title="Oslandia" description="" type="rss" version="RSS" htmlUrl="https://oslandia.com" xmlUrl="https://oslandia.com/en/feed"/>
     <outline text="Spatial Product Growth with GeoCalamito" title="Spatial Product Growth with GeoCalamito" description="" type="rss" version="RSS" htmlUrl="https://geocalamito.substack.com" xmlUrl="https://geocalamito.substack.com/feed"/>
     <outline text="Maps, Tattoos, and Geospatial Views" title="Maps, Tattoos, and Geospatial Views" description="" type="rss" version="RSS" htmlUrl="https://thespatialjefe.substack.com" xmlUrl="https://thespatialjefe.substack.com/feed"/>
     <outline text="Geomermaids" title="Geomermaids" description="" type="rss" version="RSS" htmlUrl="https://geomermaids.com" xmlUrl="https://geomermaids.com/rss.xml"/>
     <outline text="Geospatial Jobs Clearinghouse" title="Geospatial Jobs Clearinghouse" description="" type="rss" version="RSS" htmlUrl="https://www.gjc.org/cgi-bin/rssjobs.pl" xmlUrl="https://www.gjc.org/cgi-bin/rssjobs.pl"/>
-    <outline text="GIS Jobs" title="GIS Jobs" description="" type="rss" version="RSS" htmlUrl="https://www.gisjobs.com/rssjobs.php" xmlUrl="https://www.gisjobs.com/rssjobs.php"/>
+    <outline text="GIS Jobs" title="GIS Jobs" description="" type="rss" version="RSS" htmlUrl="https://www.gisjobs.com/rssjobs.php" xmlUrl="https://www.gisjobs.com/rssjobs.php" defaultImageUrl="https://www.gisjobs.com/images/headerlogo1.png"/>
     <outline text="GeoSearch" title="GeoSearch" description="" type="rss" version="RSS" htmlUrl="https://geosearch.com" xmlUrl="https://geosearch.com/feed/"/>
     <outline text="Geospatial Frontiers" title="Geospatial Frontiers" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org/geospatial-frontiers?format=rss" xmlUrl="https://projectgeospatial.org/geospatial-frontiers?format=rss"/>
     <outline text="Spatialists" title="Spatialists" description="" type="rss" version="RSS" htmlUrl="https://spatialists.ch/index.xml" xmlUrl="https://spatialists.ch/index.xml"/>

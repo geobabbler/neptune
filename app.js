@@ -66,19 +66,25 @@ const fetchAndCacheFeed = async (url, cachePath) => {
   }
 };
 
-// Parse OPML to extract feed URLs
+// Parse OPML to extract feed metadata (URL + optional defaults)
 const parseOPML = (opmlContent) => {
-  const feedUrls = [];
+  const feeds = [];
   xml2js.parseString(opmlContent, (err, result) => {
     if (err) throw err;
     const outlines = result.opml.body[0].outline;
     outlines.forEach((outline) => {
       if (outline['$'] && outline['$'].xmlUrl) {
-        feedUrls.push(outline['$'].xmlUrl);
+        feeds.push({
+          url: outline['$'].xmlUrl,
+          title: outline['$'].title || outline['$'].text || 'Untitled',
+          description: outline['$'].description || '',
+          // Optional per-feed default image, from OPML
+          defaultImageUrl: outline['$'].defaultImageUrl || null,
+        });
       }
     });
   });
-  return feedUrls;
+  return feeds;
 };
 
 // Minimal content filtering (strip HTML tags from titles)
@@ -138,11 +144,14 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
   try {
     const opmlFile = path.join(__dirname, 'feeds.opml');
     const opmlContent = fs.readFileSync(opmlFile, 'utf8');
-    const feedUrls = parseOPML(opmlContent);
+    const feeds = parseOPML(opmlContent);
 
     const aggregatedFeeds = [];
 
-    for (const url of feedUrls) {
+    for (const feed of feeds) {
+      const url = feed.url;
+      const defaultImageUrl = feed.defaultImageUrl || null;
+
       const cachePath = path.join(cacheDir, `${Buffer.from(url).toString('hex')}.xml`);
       let feedData;
 
@@ -160,6 +169,14 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
         const feedInfo = parseFeedItems(parsedFeed);
 
         if (feedInfo && feedInfo.items.length > 0) {
+          // Apply OPML-level default image URL as the last fallback per item
+          if (defaultImageUrl && isValidImageUrl(defaultImageUrl)) {
+            feedInfo.items = feedInfo.items.map((item) => ({
+              ...item,
+              imageUrl: item.imageUrl || defaultImageUrl,
+            }));
+          }
+
           aggregatedFeeds.push(feedInfo);
         }
       }
