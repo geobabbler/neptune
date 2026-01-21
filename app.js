@@ -48,7 +48,7 @@ const fetchAndCacheFeed = async (url, cachePath) => {
     const response = await axios.get(url, {
       timeout: 10000, // 10 second timeout
       headers: {
-        'User-Agent': 'GeoFeeds Spatial News',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
         'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*'
       },
       maxRedirects: 5
