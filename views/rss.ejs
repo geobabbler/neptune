@@ -46,6 +46,28 @@
         <% } else { %>
             
         <% } %>
+        <%
+            // Add enclosure element for featured image if available
+            if (item.imageUrl) {
+                // Determine MIME type from URL extension
+                let mimeType = 'image/jpeg'; // default
+                const imageUrl = item.imageUrl.toLowerCase();
+                if (imageUrl.includes('.png')) {
+                    mimeType = 'image/png';
+                } else if (imageUrl.includes('.gif')) {
+                    mimeType = 'image/gif';
+                } else if (imageUrl.includes('.webp')) {
+                    mimeType = 'image/webp';
+                } else if (imageUrl.includes('.svg')) {
+                    mimeType = 'image/svg+xml';
+                } else if (imageUrl.includes('.bmp')) {
+                    mimeType = 'image/bmp';
+                } else if (imageUrl.includes('.ico')) {
+                    mimeType = 'image/x-icon';
+                }
+        %>
+            <enclosure url="<%= item.imageUrl %>" type="<%= mimeType %>" length="0"/>
+        <% } %>
     </item>
     <% }); %>
 

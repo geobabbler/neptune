@@ -42,12 +42,13 @@ if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
 // Utility function to fetch and cache feeds
+//'Neptune Feed Aggregator/1.0'
 const fetchAndCacheFeed = async (url, cachePath) => {
   try {
     const response = await axios.get(url, {
       timeout: 10000, // 10 second timeout
       headers: {
-        'User-Agent': 'Neptune Feed Aggregator/1.0',
+        'User-Agent': 'GeoFeeds Spatial News',
         'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*'
       },
       maxRedirects: 5
@@ -97,15 +98,28 @@ const renderFeeds = (rssFeed) => {
       if (err) reject(err);
 
       const items = result.rss.channel[0].item || [];
-      const feedItems = items.map((item) => ({
-        title: item.title ? item.title[0] : 'No title',
-        description: item.description ? item.description[0] : 'No description',
-        link: item.link ? item.link[0] : '#',
-        pubDate: item.pubDate ? item.pubDate[0] : 'Unknown date',
-        source: item.source ? item.source[0]._ : 'Unknown source',
-        author: item.author ? item.author[0] :
-          item['dc:creator'] ? item['dc:creator'][0] : null
-      }));
+      const feedItems = items.map((item) => {
+        // Extract enclosure image URL if present
+        let imageUrl = null;
+        if (item.enclosure && Array.isArray(item.enclosure)) {
+          const enclosure = item.enclosure[0]; // Take first enclosure
+          const type = enclosure.$.type || enclosure.type || '';
+          if (type.startsWith('image/')) {
+            imageUrl = enclosure.$.url || enclosure.url || '';
+          }
+        }
+        
+        return {
+          title: item.title ? item.title[0] : 'No title',
+          description: item.description ? item.description[0] : 'No description',
+          link: item.link ? item.link[0] : '#',
+          pubDate: item.pubDate ? item.pubDate[0] : 'Unknown date',
+          source: item.source ? item.source[0]._ : 'Unknown source',
+          author: item.author ? item.author[0] :
+            item['dc:creator'] ? item['dc:creator'][0] : null,
+          imageUrl: imageUrl || null
+        };
+      });
 
       // Sort items by publication date (newest first)
       feedItems.sort((a, b) => {
@@ -192,6 +206,191 @@ const summarizeText = (text, maxLength) => {
   return truncatedText + "...";
 };
 
+// Helper function to validate image URL format and extension
+const isValidImageUrl = (url) => {
+  if (!url || typeof url !== 'string') return false;
+  
+  try {
+    // Validate URL format
+    const urlObj = new URL(url);
+    
+    // Check for image file extensions
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'];
+    const pathname = urlObj.pathname.toLowerCase();
+    const hasImageExtension = imageExtensions.some(ext => pathname.endsWith(ext));
+    
+    // Also check if URL contains common image path patterns
+    const hasImagePattern = /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)(\?|$)/i.test(url);
+    
+    return hasImageExtension || hasImagePattern;
+  } catch (e) {
+    // Invalid URL format
+    return false;
+  }
+};
+
+// Helper function to convert relative URL to absolute
+const resolveImageUrl = (imageUrl, baseUrl) => {
+  if (!imageUrl) return null;
+  
+  try {
+    // If already absolute, return as-is
+    new URL(imageUrl);
+    return imageUrl;
+  } catch (e) {
+    // Relative URL - try to resolve using baseUrl
+    if (baseUrl) {
+      try {
+        const base = new URL(baseUrl);
+        return new URL(imageUrl, base).toString();
+      } catch (e2) {
+        // Can't resolve, return null
+        return null;
+      }
+    }
+    return null;
+  }
+};
+
+// Helper function to extract image URL from HTML content
+const extractImageFromHtml = (htmlContent, baseUrl) => {
+  if (!htmlContent || typeof htmlContent !== 'string') return null;
+  
+  try {
+    const $ = cheerio.load(htmlContent);
+    
+    // Priority 1: Look for og:image meta tag
+    const ogImage = $('meta[property="og:image"]').attr('content') || 
+                    $('meta[name="og:image"]').attr('content');
+    if (ogImage) {
+      const resolved = resolveImageUrl(ogImage, baseUrl);
+      if (resolved && isValidImageUrl(resolved)) {
+        return resolved;
+      }
+    }
+    
+    // Priority 2: Look for first img tag
+    const firstImg = $('img').first();
+    if (firstImg.length > 0) {
+      const imgSrc = firstImg.attr('src') || firstImg.attr('data-src');
+      if (imgSrc) {
+        const resolved = resolveImageUrl(imgSrc, baseUrl);
+        if (resolved && isValidImageUrl(resolved)) {
+          return resolved;
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error extracting image from HTML:', error);
+    return null;
+  }
+};
+
+// Helper function to extract featured image URL from feed item
+// Priority order:
+// 1. RSS enclosure (if type is image)
+// 2. og:image as direct RSS element
+// 3. RSS/Atom media:thumbnail or media:content
+// 4. First img tag from HTML description
+// 5. og:image from HTML description
+const extractImageUrl = (item, itemLink, description) => {
+  try {
+    // Priority 1: RSS enclosure (if type is image)
+    if (item.enclosure && Array.isArray(item.enclosure)) {
+      for (const enclosure of item.enclosure) {
+        const type = enclosure.$.type || enclosure.type || '';
+        if (type.startsWith('image/')) {
+          const url = enclosure.$.url || enclosure.url || '';
+          if (url && isValidImageUrl(url)) {
+            return url;
+          }
+        }
+      }
+    }
+    
+    // Priority 2: og:image as direct RSS element
+    if (item['og:image']) {
+      let ogImageUrl = null;
+      if (Array.isArray(item['og:image'])) {
+        // Could be text content or an object with attributes
+        const ogImage = item['og:image'][0];
+        ogImageUrl = typeof ogImage === 'string' ? ogImage : 
+                     ogImage._ || ogImage.$?.url || ogImage.url || ogImage.content;
+      } else if (typeof item['og:image'] === 'string') {
+        ogImageUrl = item['og:image'];
+      } else {
+        ogImageUrl = item['og:image']._ || item['og:image'].$?.url || item['og:image'].url || item['og:image'].content;
+      }
+      
+      if (ogImageUrl) {
+        const resolved = resolveImageUrl(ogImageUrl, itemLink);
+        if (resolved && isValidImageUrl(resolved)) {
+          return resolved;
+        }
+      }
+    }
+    
+    // Priority 3: RSS/Atom media:thumbnail or media:content
+    // Check media:thumbnail first (usually the featured image)
+    if (item['media:thumbnail'] && Array.isArray(item['media:thumbnail'])) {
+      const thumbnail = item['media:thumbnail'][0];
+      const url = thumbnail.$.url || thumbnail.url || '';
+      if (url && isValidImageUrl(url)) {
+        return url;
+      }
+    }
+    
+    // Check media:content for images
+    if (item['media:content'] && Array.isArray(item['media:content'])) {
+      for (const content of item['media:content']) {
+        const medium = content.$.medium || content.medium || '';
+        const type = content.$.type || content.type || '';
+        if (medium === 'image' || type.startsWith('image/')) {
+          const url = content.$.url || content.url || '';
+          if (url && isValidImageUrl(url)) {
+            return url;
+          }
+        }
+      }
+    }
+    
+    // Priority 4 & 5: Extract from HTML description
+    // This handles both img tags and og:image meta tags
+    if (description) {
+      const imageUrl = extractImageFromHtml(description, itemLink);
+      if (imageUrl) {
+        return imageUrl;
+      }
+
+      // Final fallback: scan for any image-like URL in the text/HTML
+      try {
+        const urlRegex = /https?:\/\/[^\s"'<>]+/g;
+        const matches = description.match(urlRegex) || [];
+        for (let raw of matches) {
+          // Strip common trailing punctuation that might be attached in text
+          const cleaned = raw.replace(/[),.]+$/, '');
+          if (cleaned && isValidImageUrl(cleaned)) {
+            const resolved = resolveImageUrl(cleaned, itemLink);
+            if (resolved && isValidImageUrl(resolved)) {
+              return resolved;
+            }
+          }
+        }
+      } catch (e) {
+        // Ignore fallback parsing errors
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    // Log warning but don't fail the entire item
+    console.warn('Error extracting image URL (continuing without image):', error.message);
+    return null;
+  }
+};
+
 // Helper function to parse both RSS and Atom feeds
 const parseFeedItems = (parsedFeed) => {
   try {
@@ -210,16 +409,25 @@ const parseFeedItems = (parsedFeed) => {
           const pubDate = new Date(entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : 0);
           return pubDate > twelveMonthsAgo;
         })
-        .map(entry => ({
-          title: entry.title ? entry.title[0]._ || entry.title[0] : 'Untitled',
-          description: summarizeText(entry.content ? entry.content[0]._ || entry.content[0] :
-            entry.summary ? entry.summary[0]._ || entry.summary[0] : '', 1000),
-          link: entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '',
-          pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
-          source: feedTitle,
-          sourceLink: feedLink,
-          original: entry
-        })) : [];
+        .map(entry => {
+          const entryLink = entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '';
+          const entryDescription = entry.content ? entry.content[0]._ || entry.content[0] :
+            entry.summary ? entry.summary[0]._ || entry.summary[0] : '';
+          
+          // Extract featured image
+          const imageUrl = extractImageUrl(entry, entryLink, entryDescription);
+          
+          return {
+            title: entry.title ? entry.title[0]._ || entry.title[0] : 'Untitled',
+            description: summarizeText(entryDescription, 1000),
+            link: entryLink,
+            pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
+            source: feedTitle,
+            sourceLink: feedLink,
+            imageUrl: imageUrl || null,
+            original: entry
+          };
+        }) : [];
 
       return { title: feedTitle, items };
     }
@@ -235,15 +443,32 @@ const parseFeedItems = (parsedFeed) => {
           const pubDate = new Date(item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : 0);
           return pubDate > twelveMonthsAgo;
         })
-        .map(item => ({
-          title: item.title ? item.title[0] : 'Untitled',
-          description: summarizeText(item.description ? item.description[0] : '', 1000),
-          link: item.link ? item.link[0] : '',
-          pubDate: item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : new Date().toUTCString(),
-          source: feedTitle,
-          sourceLink: feedLink.toString(),
-          original: item
-        })) : [];
+        .map(item => {
+          const itemLink = item.link ? item.link[0] : '';
+
+          // Prefer full HTML content when available (e.g., WordPress content:encoded),
+          // fall back to description otherwise.
+          const rawContent = item['content:encoded']
+            ? (item['content:encoded'][0]._ || item['content:encoded'][0] || '')
+            : (item.description ? item.description[0] : '');
+
+          // Extract featured image from the best HTML source we have
+          const imageUrl = extractImageUrl(item, itemLink, rawContent);
+
+          // Use the same HTML source for summarization
+          const summarizedDescription = summarizeText(rawContent, 1000);
+          
+          return {
+            title: item.title ? item.title[0] : 'Untitled',
+            description: summarizedDescription,
+            link: itemLink,
+            pubDate: item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : new Date().toUTCString(),
+            source: feedTitle,
+            sourceLink: feedLink.toString(),
+            imageUrl: imageUrl || null,
+            original: item
+          };
+        }) : [];
 
       return { title: feedTitle, items };
     }
@@ -259,15 +484,24 @@ const parseFeedItems = (parsedFeed) => {
           const pubDate = new Date(item['dc:date'] ? item['dc:date'][0] : 0);
           return pubDate > twelveMonthsAgo;
         })
-        .map(item => ({
-          title: item.title ? item.title[0] : 'Untitled',
-          description: summarizeText(item.description ? item.description[0] : '', 1000),
-          link: item.link ? item.link[0] : '',
-          pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
-          source: feedTitle,
-          sourceLink: feedLink.toString(),
-          original: item
-        })) : [];
+        .map(item => {
+          const itemLink = item.link ? item.link[0] : '';
+          const itemDescription = item.description ? item.description[0] : '';
+          
+          // Extract featured image
+          const imageUrl = extractImageUrl(item, itemLink, itemDescription);
+          
+          return {
+            title: item.title ? item.title[0] : 'Untitled',
+            description: summarizeText(itemDescription, 1000),
+            link: itemLink,
+            pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
+            source: feedTitle,
+            sourceLink: feedLink.toString(),
+            imageUrl: imageUrl || null,
+            original: item
+          };
+        }) : [];
 
       return { title: feedTitle, items };
     }

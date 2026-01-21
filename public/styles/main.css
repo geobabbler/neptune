@@ -70,6 +70,24 @@ h5 {
     margin: 10px 0;
 }
 
+.feed-image {
+    margin: 15px 0;
+}
+
+.feed-image img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    display: block;
+}
+
+@media (min-width: 850px) {
+    .feed-image img {
+        max-width: 800px;
+    }
+}
+
 .read-more {
     display: inline-block;
     padding: 8px 15px;
