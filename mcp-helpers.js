@@ -57,6 +57,56 @@ const getCachePath = (cacheDir, url) => {
 const sanitizeXml = (xmlString) => {
   let sanitized = xmlString;
   
+  // Pre-step 1: Fix namespace declarations using &quot; instead of quotes
+  // This is a common malformation where xmlns attributes use HTML entities
+  // Pattern: xmlns:name=&quot;value&quot; -> xmlns:name="value"
+  // Target namespace declarations specifically for reliability
+  sanitized = sanitized.replace(
+    /(xmlns(?::\w+)?)\s*=\s*&quot;([^&<>]*?)&quot;/g,
+    (match, namespaceName, namespaceValue) => {
+      return `${namespaceName}="${namespaceValue}"`;
+    }
+  );
+  
+  // Pre-step 2: Fix any other attributes using &quot; as delimiters
+  // This catches non-namespace attributes that might have the same issue
+  sanitized = sanitized.replace(
+    /(\w+(?::\w+)?)\s*=\s*&quot;([^&<>]*?)&quot;/g,
+    (match, attrName, attrValue) => {
+      // Skip if we already fixed it as a namespace
+      if (attrName.startsWith('xmlns')) {
+        return match; // Already handled above
+      }
+      return `${attrName}="${attrValue}"`;
+    }
+  );
+  
+  // Pre-step 3: Handle the specific case where &quot; appears at end of line before >
+  sanitized = sanitized.replace(/&quot;\s*>/g, '">');
+  
+  // Pre-step 2: Fix unquoted attributes more aggressively
+  // This handles cases where attributes like attr=value&more appear
+  // We'll quote any unquoted attribute that contains &, <, >, or spaces
+  sanitized = sanitized.replace(
+    /(\w+(?::\w+)?)\s*=\s*([^"'\s>]+[&<>][^"'\s>]*)/g,
+    (match, attrName, attrValue) => {
+      // Skip if already quoted
+      if (attrValue.startsWith('"') || attrValue.startsWith("'")) {
+        return match;
+      }
+      // Skip if it's an HTML entity being used incorrectly
+      if (attrValue.startsWith('&quot;') || attrValue.startsWith('&apos;')) {
+        return match; // Let the previous step handle it
+      }
+      // Escape special characters and quote
+      let fixed = attrValue
+        .replace(/&(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      return `${attrName}="${fixed}"`;
+    }
+  );
+  
   // Step 1: Fix unquoted attributes that contain ampersands by quoting them
   // Pattern: attr=value&more (unquoted attribute with &)
   // This handles cases like: <tag attr=value&more> or <tag attr=value&more other=value>
@@ -153,16 +203,36 @@ const parseCachedFeed = async (cachePath) => {
       console.warn(`XML parse error for ${cachePath}, attempting to sanitize:`, parseError.message);
       
       // Log the problematic line if available for debugging
-      if (parseError.line) {
-        const lines = feedData.split('\n');
-        const problemLine = lines[parseError.line - 1];
-        if (problemLine) {
-          console.warn(`Problematic line ${parseError.line}: ${problemLine.substring(0, 200)}`);
-        }
+      const lines = feedData.split('\n');
+      const errorLine = parseError.line || 7; // Default to 7 if not available
+      const problemLine = lines[errorLine - 1];
+      if (problemLine) {
+        console.warn(`Problematic line ${errorLine}: ${problemLine.substring(0, 200)}`);
+        console.warn(`Full line: ${problemLine}`);
+      }
+      
+      // Also show surrounding lines for context
+      if (lines.length > errorLine) {
+        console.warn(`Line ${errorLine - 1}: ${lines[errorLine - 2]?.substring(0, 100) || 'N/A'}`);
+        console.warn(`Line ${errorLine + 1}: ${lines[errorLine]?.substring(0, 100) || 'N/A'}`);
       }
       
       try {
         const sanitized = sanitizeXml(feedData);
+        
+        // Log a snippet of the sanitized version around the problematic area for debugging
+        if (parseError.line) {
+          const sanitizedLines = sanitized.split('\n');
+          const problemLine = sanitizedLines[parseError.line - 1];
+          const prevLine = sanitizedLines[parseError.line - 2];
+          const nextLine = sanitizedLines[parseError.line];
+          if (problemLine) {
+            console.warn(`Sanitized line ${parseError.line}: ${problemLine.substring(0, 200)}`);
+            if (prevLine) console.warn(`  Previous: ${prevLine.substring(0, 100)}`);
+            if (nextLine) console.warn(`  Next: ${nextLine.substring(0, 100)}`);
+          }
+        }
+        
         const parsedFeed = await xml2js.parseStringPromise(sanitized);
         console.log(`Successfully parsed after sanitization: ${cachePath}`);
         return parsedFeed;
@@ -173,6 +243,9 @@ const parseCachedFeed = async (cachePath) => {
         if (parseError.message.includes('Unquoted attribute value')) {
           console.error(`This feed has malformed XML with unescaped characters in attributes.`);
           console.error(`Sanitization attempt also failed: ${sanitizeError.message}`);
+          if (sanitizeError.line) {
+            console.error(`Sanitization error at line: ${sanitizeError.line}, column: ${sanitizeError.column}`);
+          }
         }
         return null;
       }
@@ -640,6 +713,7 @@ module.exports = {
   extractFeedItems,
   getAllCachedFeeds,
   searchCachedFeeds,
-  summarizeText
+  summarizeText,
+  sanitizeXml
 };
 

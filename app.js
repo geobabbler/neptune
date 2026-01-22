@@ -53,8 +53,8 @@ const fetchAndCacheFeed = async (url, cachePath) => {
       },
       maxRedirects: 5
     });
-    fs.writeFileSync(cachePath, response.data, 'utf8');
-    return response.data;
+    fs.writeFileSync(cachePath, response.data.replace('xmlns:media=&quot;http://search.yahoo.com/mrss/&quot;', 'xmlns:media="http://search.yahoo.com/mrss/"'), 'utf8');
+    return response.data.replace('xmlns:media=&quot;http://search.yahoo.com/mrss/&quot;', 'xmlns:media="http://search.yahoo.com/mrss/"');
   } catch (error) {
     console.error(`Error fetching feed from ${url}:`, error.message);
     // If cache exists, return cached data as fallback
