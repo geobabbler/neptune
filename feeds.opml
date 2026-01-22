@@ -106,5 +106,6 @@
     <outline text="geoObserver" title="geoObserver" description="" type="rss" version="RSS" htmlUrl="https://geoobserver.de" xmlUrl="https://geoobserver.de/feed/" defaultImageUrl="https://geoobserver.de/wp-content/uploads/2024/05/geoObserver_Banner_23.png" />
     <outline text="SSP Innovations" title="SSP Innovations" description="" type="rss" version="RSS" htmlUrl="https://sspinnovations.com/blog" xmlUrl="https://sspinnovations.com/blog/feed/" defaultImageUrl="https://sspinnovations.com/wp-content/themes/asenka/imgs/ssplogo.png" />
     <outline text="Swift Geospatial Solutions" title="Swift Geospatial Solutions" type="rss" version="RSS" htmlUrl="https://swiftgeospatial.solutions/blog/" xmlUrl="https://swiftgeospatial.solutions/feed" defaultImageUrl="https://swiftgeospatial.solutions/wp-content/uploads/2022/07/Swift-New-Logo-2600800.png" />
+    <outline text="OpenStreetMap US" title="OpenStreetMap US" type="rss" version="RSS" htmlUrl="https://openstreetmap.us/news" xmlUrl="https://openstreetmap.us/news/feed.xml" defaultImageUrl="https://d2r0txsugik6oi.cloudfront.net/neon/resource/openstreetmap/images/header.gif" />
   </body>
 </opml>

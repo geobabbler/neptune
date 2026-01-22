@@ -67,22 +67,20 @@ const fetchAndCacheFeed = async (url, cachePath) => {
 };
 
 // Parse OPML to extract feed metadata (URL + optional defaults)
-const parseOPML = (opmlContent) => {
+const parseOPML = async (opmlContent) => {
+  const result = await xml2js.parseStringPromise(opmlContent);
   const feeds = [];
-  xml2js.parseString(opmlContent, (err, result) => {
-    if (err) throw err;
-    const outlines = result.opml.body[0].outline;
-    outlines.forEach((outline) => {
-      if (outline['$'] && outline['$'].xmlUrl) {
-        feeds.push({
-          url: outline['$'].xmlUrl,
-          title: outline['$'].title || outline['$'].text || 'Untitled',
-          description: outline['$'].description || '',
-          // Optional per-feed default image, from OPML
-          defaultImageUrl: outline['$'].defaultImageUrl || null,
-        });
-      }
-    });
+  const outlines = result.opml.body[0].outline;
+  outlines.forEach((outline) => {
+    if (outline['$'] && outline['$'].xmlUrl) {
+      feeds.push({
+        url: outline['$'].xmlUrl,
+        title: outline['$'].title || outline['$'].text || 'Untitled',
+        description: outline['$'].description || '',
+        // Optional per-feed default image, from OPML
+        defaultImageUrl: outline['$'].defaultImageUrl || null,
+      });
+    }
   });
   return feeds;
 };
@@ -144,13 +142,23 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
   try {
     const opmlFile = path.join(__dirname, 'feeds.opml');
     const opmlContent = fs.readFileSync(opmlFile, 'utf8');
-    const feeds = parseOPML(opmlContent);
+    const feeds = await parseOPML(opmlContent);
+
+    console.log(`Found ${feeds.length} feeds in OPML`);
+    const openstreetmapFeed = feeds.find(f => f.url && f.url.includes('openstreetmap.us'));
+    if (openstreetmapFeed) {
+      console.log(`OpenStreetMap US feed found: ${openstreetmapFeed.url}, title: ${openstreetmapFeed.title}`);
+    } else {
+      console.log('OpenStreetMap US feed NOT found in parsed feeds');
+      console.log('Sample feed URLs:', feeds.slice(0, 3).map(f => f.url));
+    }
 
     const aggregatedFeeds = [];
 
     for (const feed of feeds) {
       const url = feed.url;
       const defaultImageUrl = feed.defaultImageUrl || null;
+      const feedTitle = feed.title || url;
 
       const cachePath = path.join(cacheDir, `${Buffer.from(url).toString('hex')}.xml`);
       let feedData;
@@ -162,23 +170,38 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
       }
 
       if (feedData) {
-        const filteredData = filterFeedContent(feedData);
-        const parsedFeed = await xml2js.parseStringPromise(filteredData);
+        try {
+          const filteredData = filterFeedContent(feedData);
+          const parsedFeed = await xml2js.parseStringPromise(filteredData);
 
-        // Determine feed type and extract items
-        const feedInfo = parseFeedItems(parsedFeed);
+          // Determine feed type and extract items
+          // Pass the feed URL as base URL for resolving relative links
+          const feedInfo = parseFeedItems(parsedFeed, url);
 
-        if (feedInfo && feedInfo.items.length > 0) {
-          // Apply OPML-level default image URL as the last fallback per item
-          if (defaultImageUrl && isValidImageUrl(defaultImageUrl)) {
-            feedInfo.items = feedInfo.items.map((item) => ({
-              ...item,
-              imageUrl: item.imageUrl || defaultImageUrl,
-            }));
+          if (feedInfo && feedInfo.items.length > 0) {
+            // Apply OPML-level default image URL as the last fallback per item
+            if (defaultImageUrl && isValidImageUrl(defaultImageUrl)) {
+              feedInfo.items = feedInfo.items.map((item) => ({
+                ...item,
+                imageUrl: item.imageUrl || defaultImageUrl,
+              }));
+            }
+
+            aggregatedFeeds.push(feedInfo);
+            console.log(`✓ Processed ${feedTitle}: ${feedInfo.items.length} items`);
+          } else if (feedInfo && feedInfo.items.length === 0) {
+            console.log(`⚠ Feed ${feedTitle} has no items after filtering (likely all items are older than 12 months)`);
+          } else if (!feedInfo) {
+            console.log(`⚠ Feed ${feedTitle} could not be parsed or has unsupported format`);
           }
-
-          aggregatedFeeds.push(feedInfo);
+        } catch (error) {
+          console.error(`✗ Error processing feed ${feedTitle}:`, error.message);
+          if (error.stack) {
+            console.error(error.stack);
+          }
         }
+      } else {
+        console.log(`✗ Feed ${feedTitle} could not be fetched or cached`);
       }
     }
 
@@ -409,11 +432,24 @@ const extractImageUrl = (item, itemLink, description) => {
 };
 
 // Helper function to parse both RSS and Atom feeds
-const parseFeedItems = (parsedFeed) => {
+// baseUrl: optional base URL for resolving relative links
+const parseFeedItems = (parsedFeed, baseUrl = null) => {
   try {
     // Calculate date 12 months ago
     const twelveMonthsAgo = new Date();
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+    
+    // Helper to resolve relative URLs
+    const resolveUrl = (url, base) => {
+      if (!url || url.startsWith('http')) return url;
+      if (!base) return url;
+      try {
+        const baseUrlObj = new URL(base);
+        return new URL(url, baseUrlObj.origin).toString();
+      } catch (e) {
+        return url;
+      }
+    };
 
     // Check if it's an Atom feed
     if (parsedFeed.feed) {
@@ -452,8 +488,28 @@ const parseFeedItems = (parsedFeed) => {
     // Handle RSS feed
     if (parsedFeed.rss && parsedFeed.rss.channel) {
       const channel = parsedFeed.rss.channel[0];
-      const feedTitle = channel.title[0];
-      const feedLink = channel.link[0];
+      const feedTitle = channel.title ? (channel.title[0] || 'Untitled Feed') : 'Untitled Feed';
+      let feedLink = channel.link ? (channel.link[0] || '') : '';
+      
+      // Resolve relative feed links using baseUrl or atom:link
+      if (feedLink && !feedLink.startsWith('http')) {
+        if (baseUrl) {
+          feedLink = resolveUrl(feedLink, baseUrl);
+        } else {
+          // Try to get base URL from atom:link
+          const atomLink = channel['atom:link'];
+          if (atomLink && Array.isArray(atomLink) && atomLink[0] && atomLink[0].$ && atomLink[0].$.href) {
+            try {
+              const atomLinkUrl = atomLink[0].$.href;
+              if (atomLinkUrl.startsWith('http')) {
+                feedLink = resolveUrl(feedLink, atomLinkUrl);
+              }
+            } catch (e) {
+              // If we can't resolve, keep the original
+            }
+          }
+        }
+      }
 
       const items = channel.item ? channel.item
         .filter(item => {
@@ -461,7 +517,16 @@ const parseFeedItems = (parsedFeed) => {
           return pubDate > twelveMonthsAgo;
         })
         .map(item => {
-          const itemLink = item.link ? item.link[0] : '';
+          let itemLink = item.link ? item.link[0] : '';
+          
+          // Resolve relative item links using feedLink or baseUrl
+          if (itemLink && !itemLink.startsWith('http')) {
+            if (feedLink && feedLink.startsWith('http')) {
+              itemLink = resolveUrl(itemLink, feedLink);
+            } else if (baseUrl) {
+              itemLink = resolveUrl(itemLink, baseUrl);
+            }
+          }
 
           // Prefer full HTML content when available (e.g., WordPress content:encoded),
           // fall back to description otherwise.
