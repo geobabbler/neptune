@@ -710,17 +710,42 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'search_feed_items',
-        description: 'Search across all cached feeds for items matching a query string. Searches in titles, descriptions, and source names.',
+        description: 'Search across all cached feeds for items matching a query string. Supports multi-term search (AND/OR), field-specific queries (title:term), quoted phrases, fuzzy matching, date ranges, and feed filtering. Results are relevance-scored and sorted by relevance then date.',
         inputSchema: {
           type: 'object',
           properties: {
             query: {
               type: 'string',
-              description: 'Search query string',
+              description: 'Search query string. Supports: multi-term (AND/OR), field-specific (title:term, description:term, source:term), quoted phrases ("exact phrase"), and boolean operators (AND, OR). Default is AND logic.',
             },
             limit: {
               type: 'number',
               description: 'Maximum number of results to return (default: 20)',
+            },
+            useWordBoundary: {
+              type: 'boolean',
+              description: 'Use word boundary matching instead of substring matching (default: true)',
+            },
+            fuzzyTolerance: {
+              type: 'number',
+              description: 'Fuzzy matching tolerance (Levenshtein distance, 0-2). 0 = exact only, 1 = allow 1 char difference, 2 = allow 2 char difference (default: 1)',
+            },
+            dateFrom: {
+              type: 'string',
+              description: 'Filter results from this date (ISO 8601 format, e.g., "2026-01-01")',
+            },
+            dateTo: {
+              type: 'string',
+              description: 'Filter results until this date (ISO 8601 format, e.g., "2026-01-31")',
+            },
+            feedUrls: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Filter to specific feed URLs only. If not provided, searches all feeds.',
+            },
+            perFeedLimit: {
+              type: 'number',
+              description: 'Maximum results per feed before merging (default: 10). Higher values improve recall but may slow search.',
             },
           },
           required: ['query'],
@@ -812,17 +837,37 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'search_feed_items': {
-        const { query, limit = 20 } = args;
-        const results = await mcpHelpers.searchCachedFeeds(cacheDir, opmlFile, query, limit);
+        const {
+          query,
+          limit = 20,
+          useWordBoundary = true,
+          fuzzyTolerance = 1,
+          dateFrom = null,
+          dateTo = null,
+          feedUrls = null,
+          perFeedLimit = 10
+        } = args;
+
+        const searchResult = await mcpHelpers.searchCachedFeeds(
+          cacheDir,
+          opmlFile,
+          query,
+          limit,
+          {
+            useWordBoundary,
+            fuzzyTolerance: Math.max(0, Math.min(2, fuzzyTolerance)), // Clamp between 0-2
+            dateFrom,
+            dateTo,
+            feedUrls,
+            perFeedLimit
+          }
+        );
+
         return {
           content: [
             {
               type: 'text',
-              text: JSON.stringify({
-                query: query,
-                results: results,
-                count: results.length,
-              }, null, 2),
+              text: JSON.stringify(searchResult, null, 2),
             },
           ],
         };
