@@ -57,26 +57,79 @@ const getCachePath = (cacheDir, url) => {
 const sanitizeXml = (xmlString) => {
   let sanitized = xmlString;
   
-  // Fix unescaped ampersands in unquoted attribute values
+  // Step 1: Fix unquoted attributes that contain ampersands by quoting them
   // Pattern: attr=value&more (unquoted attribute with &)
+  // This handles cases like: <tag attr=value&more> or <tag attr=value&more other=value>
   sanitized = sanitized.replace(
-    /(\w+)\s*=\s*([^"'\s>]+&[^"'\s>]*?)(\s|>)/g,
+    /(\w+)\s*=\s*([^"'\s>]+&[^"'\s>]*?)(?=\s+\w+\s*=|>|\s*\/>)/g,
+    (match, attrName, attrValue) => {
+      // Skip if it's already a valid entity
+      if (/&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);/.test(attrValue)) {
+        return match;
+      }
+      // Escape ampersands and quote the attribute value
+      const fixedValue = attrValue.replace(/&(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)/g, '&amp;');
+      return `${attrName}="${fixedValue}"`;
+    }
+  );
+  
+  // Step 2: Fix unquoted attributes at end of tag (before > or />)
+  sanitized = sanitized.replace(
+    /(\w+)\s*=\s*([^"'\s>]+&[^"'\s>]*?)(\s*\/?>)/g,
     (match, attrName, attrValue, ending) => {
       // Skip if it's already a valid entity
       if (/&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);/.test(attrValue)) {
         return match;
       }
-      // Escape ampersands in the attribute value
+      // Escape ampersands and quote the attribute value
       const fixedValue = attrValue.replace(/&(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)/g, '&amp;');
       return `${attrName}="${fixedValue}"${ending}`;
     }
   );
   
-  // Fix unescaped ampersands in quoted attribute values
+  // Step 3: Fix unescaped ampersands in quoted attribute values
   sanitized = sanitized.replace(
     /(\w+\s*=\s*["'])([^"']*?)(&)(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)([^"']*?)(["'])/g,
     (match, prefix, before, amp, after, suffix) => {
       return prefix + before + '&amp;' + after + suffix;
+    }
+  );
+  
+  // Step 4: More aggressive - find any unquoted attribute with & and quote it
+  // This catches edge cases where the above patterns might miss
+  sanitized = sanitized.replace(
+    /<([^>]+)>/g,
+    (match, attributes) => {
+      // Check if this tag has unquoted attributes with ampersands
+      if (!/&/.test(attributes)) {
+        return match; // No ampersands, skip
+      }
+      
+      // Process each attribute in the tag - catch ALL unquoted attributes with &
+      let fixedAttributes = attributes.replace(
+        /(\w+)\s*=\s*([^"'\s>]+)/g,
+        (attrMatch, attrName, attrValue) => {
+          // Skip if already quoted
+          if (attrValue.startsWith('"') || attrValue.startsWith("'")) {
+            // But still check for unescaped & in quoted values
+            if (/&(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)/.test(attrValue)) {
+              const fixedValue = attrValue.replace(/&(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)/g, '&amp;');
+              return `${attrName}=${fixedValue}`;
+            }
+            return attrMatch;
+          }
+          
+          // Unquoted attribute - check if it has an unescaped &
+          if (/&(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)/.test(attrValue)) {
+            const fixedValue = attrValue.replace(/&(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)/g, '&amp;');
+            return `${attrName}="${fixedValue}"`;
+          }
+          
+          return attrMatch;
+        }
+      );
+      
+      return `<${fixedAttributes}>`;
     }
   );
   
@@ -98,6 +151,16 @@ const parseCachedFeed = async (cachePath) => {
     } catch (parseError) {
       // If parsing fails, try sanitizing and parsing again
       console.warn(`XML parse error for ${cachePath}, attempting to sanitize:`, parseError.message);
+      
+      // Log the problematic line if available for debugging
+      if (parseError.line) {
+        const lines = feedData.split('\n');
+        const problemLine = lines[parseError.line - 1];
+        if (problemLine) {
+          console.warn(`Problematic line ${parseError.line}: ${problemLine.substring(0, 200)}`);
+        }
+      }
+      
       try {
         const sanitized = sanitizeXml(feedData);
         const parsedFeed = await xml2js.parseStringPromise(sanitized);
@@ -109,6 +172,7 @@ const parseCachedFeed = async (cachePath) => {
         console.error(`Line: ${parseError.line || 'unknown'}, Column: ${parseError.column || 'unknown'}`);
         if (parseError.message.includes('Unquoted attribute value')) {
           console.error(`This feed has malformed XML with unescaped characters in attributes.`);
+          console.error(`Sanitization attempt also failed: ${sanitizeError.message}`);
         }
         return null;
       }
