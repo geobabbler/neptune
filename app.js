@@ -911,6 +911,10 @@ mcpServer.connect(mcpTransport).then(() => {
 // Unified MCP endpoint - handles both GET and POST requests
 // Streamable HTTP uses a single endpoint for all communication
 app.all('/mcp', async (req, res) => {
+  const startTime = Date.now();
+  const timestamp = new Date().toISOString();
+  const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+  
   try {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
@@ -921,11 +925,54 @@ app.all('/mcp', async (req, res) => {
       return;
     }
 
+    // Extract MCP request info from body (if JSON-RPC)
+    let mcpMethod = null;
+    let toolName = null;
+    let requestId = null;
+    
+    if (req.body && typeof req.body === 'object') {
+      mcpMethod = req.body.method || null;
+      requestId = req.body.id || null;
+      
+      // If it's a tool call, extract the tool name
+      if (mcpMethod === 'tools/call' && req.body.params && req.body.params.name) {
+        toolName = req.body.params.name;
+      }
+    }
+
+    // Log response info after request completes
+    res.on('finish', () => {
+      const duration = Date.now() - startTime;
+      const statusCode = res.statusCode;
+      const statusText = statusCode >= 400 ? 'ERROR' : 'OK';
+      
+      const logParts = [
+        `[${timestamp}]`,
+        `${req.method} /mcp`,
+        `IP: ${clientIp}`,
+      ];
+      
+      if (mcpMethod) {
+        logParts.push(`Method: ${mcpMethod}`);
+      }
+      if (toolName) {
+        logParts.push(`Tool: ${toolName}`);
+      }
+      if (requestId) {
+        logParts.push(`ID: ${requestId}`);
+      }
+      
+      logParts.push(`Status: ${statusCode} ${statusText}`, `Time: ${duration}ms`);
+      console.log(logParts.join(' | '));
+    });
+
     // Use the transport's handleRequest method
     // It automatically handles GET (for SSE stream) and POST (for JSON-RPC messages)
     await mcpTransport.handleRequest(req, res, req.body);
   } catch (error) {
-    console.error('Error handling MCP request:', error);
+    const duration = Date.now() - startTime;
+    console.error(`[${timestamp}] ${req.method} /mcp | IP: ${clientIp} | ERROR: ${error.message} | Time: ${duration}ms`);
+    
     if (!res.headersSent) {
       res.status(500).json({ error: error.message });
     }
