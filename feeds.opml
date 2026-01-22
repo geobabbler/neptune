@@ -105,5 +105,6 @@
     <outline text="Canadian GIS" title="Canadian GIS" description="" type="rss" version="RSS" htmlUrl="https://canadiangis.com" xmlUrl="https://canadiangis.com/feed" defaultImageUrl="https://canadiangis.com/wp-content/uploads/CanadianGIS-01.png" />
     <outline text="geoObserver" title="geoObserver" description="" type="rss" version="RSS" htmlUrl="https://geoobserver.de" xmlUrl="https://geoobserver.de/feed/" defaultImageUrl="https://geoobserver.de/wp-content/uploads/2024/05/geoObserver_Banner_23.png" />
     <outline text="SSP Innovations" title="SSP Innovations" description="" type="rss" version="RSS" htmlUrl="https://sspinnovations.com/blog" xmlUrl="https://sspinnovations.com/blog/feed/" defaultImageUrl="https://sspinnovations.com/wp-content/themes/asenka/imgs/ssplogo.png" />
+    <outline text="Swift Geospatial Solutions" title="Swift Geospatial Solutions" type="rss" version="RSS" htmlUrl="https://swiftgeospatial.solutions/blog/" xmlUrl="https://swiftgeospatial.solutions/feed" defaultImageUrl="https://swiftgeospatial.solutions/wp-content/uploads/2022/07/Swift-New-Logo-2600800.png" />
   </body>
 </opml>
