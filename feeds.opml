@@ -99,5 +99,11 @@
     <outline text="VertiGIS" title="VertiGIS" type="rss" xmlUrl="https://www.vertigis.com/vertigis_blog/feed/"/>
     <outline text="Sanborn" title="Sanborn" type="rss" xmlUrl="https://sanborn.com/feed/"/>
     <outline text="Lutra Consulting" title="Lutra Consulting" description="" type="rss" version="RSS" htmlUrl="https://www.lutraconsulting.co.uk" xmlUrl="https://bsky.app/profile/did:plc:c7rmuyp7g2uertpax55btuej/rss"/>
+    <outline text="Spatial Source" title="Spatial Source" description="" type="rss" version="RSS" htmlUrl="https://www.spatialsource.com.au" xmlUrl="https://www.spatialsource.com.au/feed/" defaultImageUrl="https://spatialsource.com.au/wp-content/themes/spatial/images/social/logo-footer.png" />
+    <outline text="GeoConnexion" title="GeoConnexion" description="" type="rss" version="RSS" htmlUrl="https://www.geoconnexion.com/news" xmlUrl="https://www.geoconnexion.com/news/feed.rss" />
+    <outline text="Geo Jobe" title="Geo Jobe" description="" type="rss" version="RSS" htmlUrl="https://geo-jobe.com" xmlUrl="https://geo-jobe.com/feed/" defaultImageUrl="https://geo-jobe.com/wp-content/uploads/2025/06/GEO-Jobe-Logo-Primary.png" />
+    <outline text="Canadian GIS" title="Canadian GIS" description="" type="rss" version="RSS" htmlUrl="https://canadiangis.com" xmlUrl="https://canadiangis.com/feed" defaultImageUrl="https://canadiangis.com/wp-content/uploads/CanadianGIS-01.png" />
+    <outline text="geoObserver" title="geoObserver" description="" type="rss" version="RSS" htmlUrl="https://geoobserver.de" xmlUrl="https://geoobserver.de/feed/" defaultImageUrl="https://geoobserver.de/wp-content/uploads/2024/05/geoObserver_Banner_23.png" />
+    <outline text="SSP Innovations" title="SSP Innovations" description="" type="rss" version="RSS" htmlUrl="https://sspinnovations.com/blog" xmlUrl="https://sspinnovations.com/blog/feed/" defaultImageUrl="https://sspinnovations.com/wp-content/themes/asenka/imgs/ssplogo.png" />
   </body>
 </opml>
