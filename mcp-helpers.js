@@ -53,6 +53,36 @@ const getCachePath = (cacheDir, url) => {
   return path.join(cacheDir, `${Buffer.from(url).toString('hex')}.xml`);
 };
 
+// Helper: Fix common XML issues before parsing
+const sanitizeXml = (xmlString) => {
+  let sanitized = xmlString;
+  
+  // Fix unescaped ampersands in unquoted attribute values
+  // Pattern: attr=value&more (unquoted attribute with &)
+  sanitized = sanitized.replace(
+    /(\w+)\s*=\s*([^"'\s>]+&[^"'\s>]*?)(\s|>)/g,
+    (match, attrName, attrValue, ending) => {
+      // Skip if it's already a valid entity
+      if (/&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);/.test(attrValue)) {
+        return match;
+      }
+      // Escape ampersands in the attribute value
+      const fixedValue = attrValue.replace(/&(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)/g, '&amp;');
+      return `${attrName}="${fixedValue}"${ending}`;
+    }
+  );
+  
+  // Fix unescaped ampersands in quoted attribute values
+  sanitized = sanitized.replace(
+    /(\w+\s*=\s*["'])([^"']*?)(&)(?![a-zA-Z]+;|#\d+|#x[0-9a-fA-F]+;)([^"']*?)(["'])/g,
+    (match, prefix, before, amp, after, suffix) => {
+      return prefix + before + '&amp;' + after + suffix;
+    }
+  );
+  
+  return sanitized;
+};
+
 // Parse a cached feed file
 const parseCachedFeed = async (cachePath) => {
   try {
@@ -60,10 +90,31 @@ const parseCachedFeed = async (cachePath) => {
       return null;
     }
     const feedData = fs.readFileSync(cachePath, 'utf8');
-    const parsedFeed = await xml2js.parseStringPromise(feedData);
-    return parsedFeed;
+    
+    // Try parsing first
+    try {
+      const parsedFeed = await xml2js.parseStringPromise(feedData);
+      return parsedFeed;
+    } catch (parseError) {
+      // If parsing fails, try sanitizing and parsing again
+      console.warn(`XML parse error for ${cachePath}, attempting to sanitize:`, parseError.message);
+      try {
+        const sanitized = sanitizeXml(feedData);
+        const parsedFeed = await xml2js.parseStringPromise(sanitized);
+        console.log(`Successfully parsed after sanitization: ${cachePath}`);
+        return parsedFeed;
+      } catch (sanitizeError) {
+        // If sanitization didn't help, log the original error with context
+        console.error(`Error parsing cached feed ${cachePath}:`, parseError.message);
+        console.error(`Line: ${parseError.line || 'unknown'}, Column: ${parseError.column || 'unknown'}`);
+        if (parseError.message.includes('Unquoted attribute value')) {
+          console.error(`This feed has malformed XML with unescaped characters in attributes.`);
+        }
+        return null;
+      }
+    }
   } catch (error) {
-    console.error('Error parsing cached feed:', error);
+    console.error(`Error reading/parsing cached feed ${cachePath}:`, error.message);
     return null;
   }
 };
