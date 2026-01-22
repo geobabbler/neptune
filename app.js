@@ -710,7 +710,7 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'search_feed_items',
-        description: 'Search across all cached feeds for items matching a query string. Supports multi-term search (AND/OR), field-specific queries (title:term), quoted phrases, fuzzy matching, date ranges, and feed filtering. Results are relevance-scored and sorted by relevance then date.',
+        description: 'Search across all cached feeds for items matching a query string. Supports multi-term search (AND/OR), field-specific queries (title:term), quoted phrases, fuzzy matching, date ranges, and feed filtering. Results are relevance-scored and sorted by relevance then date. IMPORTANT: When users provide natural language dates (e.g., "Q3 2025", "last month"), convert them to ISO 8601 format (YYYY-MM-DD) before using dateFrom/dateTo parameters.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -732,11 +732,36 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             dateFrom: {
               type: 'string',
-              description: 'Filter results from this date (ISO 8601 format, e.g., "2026-01-01")',
+              description: `Filter results from this date. Must be in ISO 8601 format (YYYY-MM-DD).
+
+IMPORTANT: If the user provides natural language dates (e.g., "Q3 2025", "last month", "last 7 days"), you MUST convert them to ISO 8601 format before calling this tool.
+
+Examples of conversions:
+- "Q3 2025" → "2025-07-01" (first day of Q3)
+- "Q1 2026" → "2026-01-01" (first day of Q1)
+- "last 7 days" → Calculate 7 days ago from today (e.g., "2026-01-15")
+- "last month" → First day of previous month (e.g., "2025-12-01")
+- "this month" → First day of current month (e.g., "2026-01-01")
+- "today" → Current date (e.g., "2026-01-22")
+- "yesterday" → Previous day (e.g., "2026-01-21")
+
+Always provide dates in YYYY-MM-DD format.`,
             },
             dateTo: {
               type: 'string',
-              description: 'Filter results until this date (ISO 8601 format, e.g., "2026-01-31")',
+              description: `Filter results until this date. Must be in ISO 8601 format (YYYY-MM-DD).
+
+IMPORTANT: If the user provides natural language dates (e.g., "Q3 2025", "end of month"), you MUST convert them to ISO 8601 format before calling this tool.
+
+Examples of conversions:
+- "Q3 2025" → "2025-09-30" (last day of Q3)
+- "Q1 2026" → "2026-03-31" (last day of Q1)
+- "last 7 days" → Today's date (e.g., "2026-01-22")
+- "this month" → Last day of current month (e.g., "2026-01-31")
+- "today" → Current date (e.g., "2026-01-22")
+- "yesterday" → Previous day (e.g., "2026-01-21")
+
+Always provide dates in YYYY-MM-DD format.`,
             },
             feedUrls: {
               type: 'array',
