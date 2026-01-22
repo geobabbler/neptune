@@ -8,6 +8,18 @@ body {
     background-color: #f5f5f5;
 }
 
+.site-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
 h1 {
     text-align: center;
     color: #2c3e50;
