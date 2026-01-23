@@ -79,6 +79,7 @@
     <outline text="Overture Maps Foundation" title="Overture Maps Foundation" description="" type="rss" version="RSS" htmlUrl="https://overturemaps.org/feed/" xmlUrl="https://overturemaps.org/feed/"/>
     <outline text="Paul Ramsey" title="Paul Ramsey" description="" type="rss" version="RSS" htmlUrl="http://blog.cleverelephant.ca" xmlUrl="http://blog.cleverelephant.ca/atom.xml"/>
     <outline text="Paul Shapley" title="Paul Shapley" description="" type="rss" version="RSS" htmlUrl="https://www.paulshapley.com" xmlUrl="https://www.paulshapley.com/feeds/posts/default?alt=rss"/>
+    <outline text="Place" title="Place" description="" type="rss" version="RSS" htmlUrl="https://thisisplace.org" xmlUrl="https://thisisplace.org/feed/" defaultImageUrl="https://thisisplace.org/wp-content/uploads/2023/11/place-logo-color.png" /> 
     <outline text="PolicyMap" title="PolicyMap" type="rss" xmlUrl="https://www.policymap.com/resources/blog/feed"/>
     <outline text="PostGIS" title="PostGIS" description="" type="rss" version="RSS" htmlUrl="https://postgis.net/" xmlUrl="https://postgis.net/feed.xml"/>
     <outline text="Project Geospatial" title="Project Geospatial" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org" xmlUrl="https://projectgeospatial.org/podcast-archive?format=rss"/>
