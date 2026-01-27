@@ -22,6 +22,27 @@ const {
   ListToolsRequestSchema,
 } = require('@modelcontextprotocol/sdk/types.js');
 const mcpHelpers = require('./mcp-helpers.js');
+const mcpCache = require('./lib/mcp-cache');
+
+// MCP Response Helpers
+const createMcpErrorResponse = (message) => ({
+  content: [
+    {
+      type: 'text',
+      text: message,
+    },
+  ],
+  isError: true,
+});
+
+const createMcpTextResponse = (data) => ({
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify(data, null, 2),
+    },
+  ],
+});
 
 const app = express();
 const port = CONFIG.PORT;
@@ -230,6 +251,7 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
     }
 
     const aggregatedFeeds = [];
+    const feedMetadataForIndex = []; // Track metadata for MCP index
 
     // Process feeds with a simple concurrency limit for better performance
     const concurrencyLimit = CONFIG.AGGREGATION_CONCURRENCY;
@@ -242,7 +264,7 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
           const defaultImageUrl = feed.defaultImageUrl || null;
           const feedTitle = feed.title || url;
 
-          const cachePath = path.join(cacheDir, `${Buffer.from(url).toString('hex')}.xml`);
+          const cachePath = mcpHelpers.getCachePath(cacheDir, url);
           let feedData;
 
           if (useCache && fs.existsSync(cachePath)) {
@@ -271,6 +293,25 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
                   }));
                 }
 
+                // Write MCP cache files (metadata index and item cache)
+                // This is isolated to MCP - aggregation workflow is unaffected
+                try {
+                  mcpCache.writeItemCache(cacheDir, url, feedInfo);
+                  
+                  // Track metadata for index
+                  feedMetadataForIndex.push({
+                    url,
+                    title: feedTitle,
+                    itemCount: feedInfo.items.length,
+                    lastUpdated: fs.existsSync(cachePath)
+                      ? fs.statSync(cachePath).mtime.toISOString()
+                      : new Date().toISOString(),
+                  });
+                } catch (cacheError) {
+                  // Non-fatal - log but don't fail aggregation
+                  console.warn(`Warning: Failed to write MCP cache for ${feedTitle}:`, cacheError.message);
+                }
+
                 aggregatedFeeds.push(feedInfo);
                 console.log(`✓ Processed ${feedTitle}: ${feedInfo.items.length} items`);
               } else if (feedInfo && feedInfo.items.length === 0) {
@@ -291,6 +332,14 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
           }
         }),
       );
+    }
+
+    // Write MCP metadata index (for fast feed listing)
+    try {
+      mcpCache.writeMetadataIndex(cacheDir, feedMetadataForIndex);
+    } catch (cacheError) {
+      // Non-fatal - log but don't fail aggregation
+      console.warn('Warning: Failed to write MCP metadata index:', cacheError.message);
     }
 
     // Generate RSS output
@@ -585,63 +634,40 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (name) {
       case 'list_cached_feeds': {
         const feeds = await mcpHelpers.getAllCachedFeeds(cacheDir, opmlFile);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(feeds, null, 2),
-            },
-          ],
-        };
+        return createMcpTextResponse(feeds);
       }
 
       case 'get_feed_items': {
         const { feedUrl, limit = 50 } = args;
         const cachePath = mcpHelpers.getCachePath(cacheDir, feedUrl);
-        const parsedFeed = await mcpHelpers.parseCachedFeed(cachePath);
         
-        if (!parsedFeed) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Feed not found in cache: ${feedUrl}`,
-              },
-            ],
-            isError: true,
-          };
-        }
-
-        const feedInfo = mcpHelpers.extractFeedItems(parsedFeed);
+        // Try item cache first (optimized path)
+        let feedInfo = await mcpHelpers.getFeedItemsWithCache(cacheDir, feedUrl, null);
+        
+        // Fallback to parsing XML if cache miss
         if (!feedInfo) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Could not parse feed: ${feedUrl}`,
-              },
-            ],
-            isError: true,
-          };
+          const parsedFeed = await mcpHelpers.parseCachedFeed(cachePath);
+          
+          if (!parsedFeed) {
+            return createMcpErrorResponse(`Feed not found in cache: ${feedUrl}`);
+          }
+
+          feedInfo = await mcpHelpers.getFeedItemsWithCache(cacheDir, feedUrl, parsedFeed);
+          if (!feedInfo) {
+            return createMcpErrorResponse(`Could not parse feed: ${feedUrl}`);
+          }
         }
 
         const items = feedInfo.items.slice(0, limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({
-                feed: {
-                  title: feedInfo.title,
-                  link: feedInfo.link,
-                },
-                items: items,
-                totalItems: feedInfo.items.length,
-                returnedItems: items.length,
-              }, null, 2),
-            },
-          ],
-        };
+        return createMcpTextResponse({
+          feed: {
+            title: feedInfo.title,
+            link: feedInfo.link,
+          },
+          items: items,
+          totalItems: feedInfo.items.length,
+          returnedItems: items.length,
+        });
       }
 
       case 'search_feed_items': {
@@ -671,14 +697,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
           }
         );
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(searchResult, null, 2),
-            },
-          ],
-        };
+        return createMcpTextResponse(searchResult);
       }
 
       case 'get_aggregated_feed': {
@@ -686,15 +705,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
         const aggregatedFile = path.join(outputDir, 'aggregated.xml');
         
         if (!fs.existsSync(aggregatedFile)) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Aggregated feed not found. The feed aggregator may need to run first.',
-              },
-            ],
-            isError: true,
-          };
+          return createMcpErrorResponse('Aggregated feed not found. The feed aggregator may need to run first.');
         }
 
         const rssFeed = fs.readFileSync(aggregatedFile, 'utf8');
@@ -702,49 +713,26 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
         const feedInfo = mcpHelpers.extractFeedItems(parsedFeed);
         
         if (!feedInfo) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Could not parse aggregated feed',
-              },
-            ],
-            isError: true,
-          };
+          return createMcpErrorResponse('Could not parse aggregated feed');
         }
 
         const items = feedInfo.items.slice(0, limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({
-                feed: {
-                  title: feedInfo.title || 'Aggregated Feed',
-                  link: feedInfo.link || '',
-                },
-                items: items,
-                totalItems: feedInfo.items.length,
-                returnedItems: items.length,
-              }, null, 2),
-            },
-          ],
-        };
+        return createMcpTextResponse({
+          feed: {
+            title: feedInfo.title || 'Aggregated Feed',
+            link: feedInfo.link || '',
+          },
+          items: items,
+          totalItems: feedInfo.items.length,
+          returnedItems: items.length,
+        });
       }
 
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
   } catch (error) {
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `Error executing tool ${name}: ${error.message}`,
-        },
-      ],
-      isError: true,
-    };
+    return createMcpErrorResponse(`Error executing tool ${name}: ${error.message}`);
   }
 });
 

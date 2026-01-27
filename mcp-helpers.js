@@ -10,6 +10,7 @@ const xml2js = require('xml2js');
 const { decode } = require('html-entities');
 const { getFeedMetadata: getOpmlFeedMetadata } = require('./lib/opml');
 const { summarizeText, extractFeedItems: extractFeedItemsLib } = require('./lib/feeds');
+const mcpCache = require('./lib/mcp-cache');
 
 // Parse OPML to get feed metadata (async, shared with app.js / HTTP MCP)
 const getFeedMetadata = async (opmlFile) => {
@@ -21,10 +22,9 @@ const getFeedMetadata = async (opmlFile) => {
   }
 };
 
-// Get cache file path for a feed URL
-const getCachePath = (cacheDir, url) => {
-  return path.join(cacheDir, `${Buffer.from(url).toString('hex')}.xml`);
-};
+// Get cache file path for a feed URL (re-exported from mcp-cache)
+// Note: We import from mcp-cache to avoid circular dependency
+const getCachePath = (cacheDir, url) => mcpCache.getCachePath(cacheDir, url);
 
 // Helper: Fix common XML issues before parsing
 const sanitizeXml = (xmlString) => {
@@ -159,19 +159,22 @@ const sanitizeXml = (xmlString) => {
   return sanitized;
 };
 
-// Parse a cached feed file
+// Parse a cached feed file (with in-memory caching)
 const parseCachedFeed = async (cachePath) => {
   try {
     if (!fs.existsSync(cachePath)) {
       return null;
     }
-    const feedData = fs.readFileSync(cachePath, 'utf8');
     
-    // Try parsing first
-    try {
-      const parsedFeed = await xml2js.parseStringPromise(feedData);
-      return parsedFeed;
-    } catch (parseError) {
+    // Use in-memory cache if available
+    return await mcpCache.getCachedParsedFeed(cachePath, async () => {
+      const feedData = fs.readFileSync(cachePath, 'utf8');
+      
+      // Try parsing first
+      try {
+        const parsedFeed = await xml2js.parseStringPromise(feedData);
+        return parsedFeed;
+      } catch (parseError) {
       // If parsing fails, try sanitizing and parsing again
       console.warn(`XML parse error for ${cachePath}, attempting to sanitize:`, parseError.message);
       
@@ -223,6 +226,7 @@ const parseCachedFeed = async (cachePath) => {
         return null;
       }
     }
+    });
   } catch (error) {
     console.error(`Error reading/parsing cached feed ${cachePath}:`, error.message);
     return null;
@@ -235,8 +239,48 @@ const CONFIG = require('./config');
 const extractFeedItems = (parsedFeed) =>
   extractFeedItemsLib(parsedFeed, { monthsBack: CONFIG.FEED_MONTHS_BACK });
 
-// Get all cached feeds
+// Get feed items with item cache optimization
+const getFeedItemsWithCache = async (cacheDir, feedUrl, parsedFeed) => {
+  // Try item cache first (fastest path)
+  const itemCache = mcpCache.readItemCache(cacheDir, feedUrl);
+  if (itemCache && itemCache.items && itemCache.items.length > 0) {
+    return {
+      title: itemCache.feed.title,
+      link: itemCache.feed.link,
+      items: itemCache.items,
+    };
+  }
+  
+  // Fallback: extract from parsed feed
+  if (parsedFeed) {
+    return extractFeedItems(parsedFeed);
+  }
+  
+  return null;
+};
+
+// Get all cached feeds (optimized with metadata index)
 const getAllCachedFeeds = async (cacheDir, opmlFile) => {
+  // Try to use metadata index first (fast path)
+  const metadataIndex = mcpCache.readMetadataIndex(cacheDir);
+  if (metadataIndex && metadataIndex.feeds && metadataIndex.feeds.length > 0) {
+    // Merge with OPML metadata to include title, defaultImageUrl, etc.
+    const opmlFeeds = await getFeedMetadata(opmlFile);
+    const opmlMap = new Map(opmlFeeds.map(f => [f.url, f]));
+    
+    return metadataIndex.feeds.map(indexFeed => {
+      const opmlFeed = opmlMap.get(indexFeed.url) || {};
+      return {
+        ...opmlFeed,
+        url: indexFeed.url,
+        title: indexFeed.title || opmlFeed.title || indexFeed.url,
+        itemCount: indexFeed.itemCount,
+        lastUpdated: indexFeed.lastUpdated,
+      };
+    });
+  }
+
+  // Fallback: parse feeds from XML (slower, but works if index doesn't exist)
   const feedMetadata = await getFeedMetadata(opmlFile);
   const cachedFeeds = [];
 
@@ -512,12 +556,22 @@ const searchCachedFeeds = async (
       }
 
       try {
-        const parsedFeed = await parseCachedFeed(cachePath);
-        if (!parsedFeed) {
-          return [];
+        // Try item cache first (fastest)
+        let feedInfo = await getFeedItemsWithCache(cacheDir, feed.url, null);
+        
+        // If item cache miss, parse XML
+        if (!feedInfo) {
+          const parsedFeed = await parseCachedFeed(cachePath);
+          if (!parsedFeed) {
+            return [];
+          }
+          
+          feedInfo = await getFeedItemsWithCache(cacheDir, feed.url, parsedFeed);
+          if (!feedInfo || !feedInfo.items) {
+            return [];
+          }
         }
-
-        const feedInfo = extractFeedItems(parsedFeed);
+        
         if (!feedInfo || !feedInfo.items) {
           return [];
         }
@@ -607,6 +661,7 @@ module.exports = {
   getCachePath,
   parseCachedFeed,
   extractFeedItems,
+  getFeedItemsWithCache,
   getAllCachedFeeds,
   searchCachedFeeds,
   summarizeText,
