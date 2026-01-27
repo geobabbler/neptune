@@ -24,6 +24,26 @@ const {
 const mcpHelpers = require('./mcp-helpers.js');
 const mcpCache = require('./lib/mcp-cache');
 
+// MCP Response Helpers
+const createMcpErrorResponse = (message) => ({
+  content: [
+    {
+      type: 'text',
+      text: message,
+    },
+  ],
+  isError: true,
+});
+
+const createMcpTextResponse = (data) => ({
+  content: [
+    {
+      type: 'text',
+      text: JSON.stringify(data, null, 2),
+    },
+  ],
+});
+
 const app = express();
 const port = CONFIG.PORT;
 
@@ -244,7 +264,7 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
           const defaultImageUrl = feed.defaultImageUrl || null;
           const feedTitle = feed.title || url;
 
-          const cachePath = path.join(cacheDir, `${Buffer.from(url).toString('hex')}.xml`);
+          const cachePath = mcpHelpers.getCachePath(cacheDir, url);
           let feedData;
 
           if (useCache && fs.existsSync(cachePath)) {
@@ -614,14 +634,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (name) {
       case 'list_cached_feeds': {
         const feeds = await mcpHelpers.getAllCachedFeeds(cacheDir, opmlFile);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(feeds, null, 2),
-            },
-          ],
-        };
+        return createMcpTextResponse(feeds);
       }
 
       case 'get_feed_items': {
@@ -636,48 +649,25 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
           const parsedFeed = await mcpHelpers.parseCachedFeed(cachePath);
           
           if (!parsedFeed) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `Feed not found in cache: ${feedUrl}`,
-                },
-              ],
-              isError: true,
-            };
+            return createMcpErrorResponse(`Feed not found in cache: ${feedUrl}`);
           }
 
           feedInfo = await mcpHelpers.getFeedItemsWithCache(cacheDir, feedUrl, parsedFeed);
           if (!feedInfo) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `Could not parse feed: ${feedUrl}`,
-                },
-              ],
-              isError: true,
-            };
+            return createMcpErrorResponse(`Could not parse feed: ${feedUrl}`);
           }
         }
 
         const items = feedInfo.items.slice(0, limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({
-                feed: {
-                  title: feedInfo.title,
-                  link: feedInfo.link,
-                },
-                items: items,
-                totalItems: feedInfo.items.length,
-                returnedItems: items.length,
-              }, null, 2),
-            },
-          ],
-        };
+        return createMcpTextResponse({
+          feed: {
+            title: feedInfo.title,
+            link: feedInfo.link,
+          },
+          items: items,
+          totalItems: feedInfo.items.length,
+          returnedItems: items.length,
+        });
       }
 
       case 'search_feed_items': {
@@ -707,14 +697,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
           }
         );
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(searchResult, null, 2),
-            },
-          ],
-        };
+        return createMcpTextResponse(searchResult);
       }
 
       case 'get_aggregated_feed': {
@@ -722,15 +705,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
         const aggregatedFile = path.join(outputDir, 'aggregated.xml');
         
         if (!fs.existsSync(aggregatedFile)) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Aggregated feed not found. The feed aggregator may need to run first.',
-              },
-            ],
-            isError: true,
-          };
+          return createMcpErrorResponse('Aggregated feed not found. The feed aggregator may need to run first.');
         }
 
         const rssFeed = fs.readFileSync(aggregatedFile, 'utf8');
@@ -738,49 +713,26 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
         const feedInfo = mcpHelpers.extractFeedItems(parsedFeed);
         
         if (!feedInfo) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Could not parse aggregated feed',
-              },
-            ],
-            isError: true,
-          };
+          return createMcpErrorResponse('Could not parse aggregated feed');
         }
 
         const items = feedInfo.items.slice(0, limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({
-                feed: {
-                  title: feedInfo.title || 'Aggregated Feed',
-                  link: feedInfo.link || '',
-                },
-                items: items,
-                totalItems: feedInfo.items.length,
-                returnedItems: items.length,
-              }, null, 2),
-            },
-          ],
-        };
+        return createMcpTextResponse({
+          feed: {
+            title: feedInfo.title || 'Aggregated Feed',
+            link: feedInfo.link || '',
+          },
+          items: items,
+          totalItems: feedInfo.items.length,
+          returnedItems: items.length,
+        });
       }
 
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
   } catch (error) {
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `Error executing tool ${name}: ${error.message}`,
-        },
-      ],
-      isError: true,
-    };
+    return createMcpErrorResponse(`Error executing tool ${name}: ${error.message}`);
   }
 });
 

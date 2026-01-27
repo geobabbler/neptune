@@ -22,10 +22,9 @@ const getFeedMetadata = async (opmlFile) => {
   }
 };
 
-// Get cache file path for a feed URL
-const getCachePath = (cacheDir, url) => {
-  return path.join(cacheDir, `${Buffer.from(url).toString('hex')}.xml`);
-};
+// Get cache file path for a feed URL (re-exported from mcp-cache)
+// Note: We import from mcp-cache to avoid circular dependency
+const getCachePath = (cacheDir, url) => mcpCache.getCachePath(cacheDir, url);
 
 // Helper: Fix common XML issues before parsing
 const sanitizeXml = (xmlString) => {
