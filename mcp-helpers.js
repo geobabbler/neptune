@@ -8,40 +8,13 @@ const fs = require('fs');
 const path = require('path');
 const xml2js = require('xml2js');
 const { decode } = require('html-entities');
+const { getFeedMetadata: getOpmlFeedMetadata } = require('./lib/opml');
+const { summarizeText, extractFeedItems: extractFeedItemsLib } = require('./lib/feeds');
 
-// Helper function to decode HTML entities and summarize text
-const summarizeText = (text, maxLength) => {
-  if (!text) return '';
-  text = text.replace(/<[^>]*>/g, '');
-  text = decode(text);
-  if (text.length <= maxLength) return text;
-  let truncatedText = text.substring(0, maxLength);
-  let lastSpaceIndex = truncatedText.lastIndexOf(" ");
-  if (lastSpaceIndex > 0) {
-    truncatedText = truncatedText.substring(0, lastSpaceIndex);
-  }
-  return truncatedText + "...";
-};
-
-// Parse OPML to get feed metadata
-const getFeedMetadata = (opmlFile) => {
+// Parse OPML to get feed metadata (async, shared with app.js / HTTP MCP)
+const getFeedMetadata = async (opmlFile) => {
   try {
-    const opmlContent = fs.readFileSync(opmlFile, 'utf8');
-    const feedUrls = [];
-    xml2js.parseString(opmlContent, (err, result) => {
-      if (err) throw err;
-      const outlines = result.opml.body[0].outline;
-      outlines.forEach((outline) => {
-        if (outline['$'] && outline['$'].xmlUrl) {
-          feedUrls.push({
-            url: outline['$'].xmlUrl,
-            title: outline['$'].title || outline['$'].text || 'Untitled',
-            description: outline['$'].description || ''
-          });
-        }
-      });
-    });
-    return feedUrls;
+    return await getOpmlFeedMetadata(opmlFile);
   } catch (error) {
     console.error('Error reading OPML:', error);
     return [];
@@ -256,92 +229,15 @@ const parseCachedFeed = async (cachePath) => {
   }
 };
 
-// Extract items from parsed feed (similar to parseFeedItems in app.js)
-const extractFeedItems = (parsedFeed) => {
-  try {
-    const twelveMonthsAgo = new Date();
-    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-
-    // Handle Atom feed
-    if (parsedFeed.feed) {
-      const feed = parsedFeed.feed;
-      const feedTitle = feed.title ? feed.title[0]._ || feed.title[0] : 'Untitled Feed';
-      const feedLink = feed.link && feed.link[0] && feed.link[0].href ? feed.link[0].href : '';
-
-      const items = feed.entry ? feed.entry
-        .filter(entry => {
-          const pubDate = new Date(entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : 0);
-          return pubDate > twelveMonthsAgo;
-        })
-        .map(entry => ({
-          title: entry.title ? entry.title[0]._ || entry.title[0] : 'Untitled',
-          description: summarizeText(entry.content ? entry.content[0]._ || entry.content[0] :
-            entry.summary ? entry.summary[0]._ || entry.summary[0] : '', 500),
-          link: entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '',
-          pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
-          source: feedTitle,
-          sourceLink: feedLink
-        })) : [];
-
-      return { title: feedTitle, items, link: feedLink };
-    }
-
-    // Handle RSS feed
-    if (parsedFeed.rss && parsedFeed.rss.channel) {
-      const channel = parsedFeed.rss.channel[0];
-      const feedTitle = channel.title[0];
-      const feedLink = channel.link[0];
-
-      const items = channel.item ? channel.item
-        .filter(item => {
-          const pubDate = new Date(item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : 0);
-          return pubDate > twelveMonthsAgo;
-        })
-        .map(item => ({
-          title: item.title ? item.title[0] : 'Untitled',
-          description: summarizeText(item.description ? item.description[0] : '', 500),
-          link: item.link ? item.link[0] : '',
-          pubDate: item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : new Date().toUTCString(),
-          source: feedTitle,
-          sourceLink: feedLink.toString()
-        })) : [];
-
-      return { title: feedTitle, items, link: feedLink.toString() };
-    }
-
-    // Handle RDF (RSS 1.0) feed
-    if (parsedFeed['rdf:RDF']) {
-      const rdf = parsedFeed['rdf:RDF'];
-      const channel = rdf.channel[0];
-      const feedTitle = channel.title[0];
-      const feedLink = channel.link[0];
-      const items = rdf.item ? rdf.item
-        .filter(item => {
-          const pubDate = new Date(item['dc:date'] ? item['dc:date'][0] : 0);
-          return pubDate > twelveMonthsAgo;
-        })
-        .map(item => ({
-          title: item.title ? item.title[0] : 'Untitled',
-          description: summarizeText(item.description ? item.description[0] : '', 500),
-          link: item.link ? item.link[0] : '',
-          pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
-          source: feedTitle,
-          sourceLink: feedLink.toString()
-        })) : [];
-
-      return { title: feedTitle, items, link: feedLink.toString() };
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error extracting feed items:', error);
-    return null;
-  }
-};
+// Extract items from parsed feed (shared implementation)
+// Note: uses the same monthsBack as the main app (config-controlled).
+const CONFIG = require('./config');
+const extractFeedItems = (parsedFeed) =>
+  extractFeedItemsLib(parsedFeed, { monthsBack: CONFIG.FEED_MONTHS_BACK });
 
 // Get all cached feeds
 const getAllCachedFeeds = async (cacheDir, opmlFile) => {
-  const feedMetadata = getFeedMetadata(opmlFile);
+  const feedMetadata = await getFeedMetadata(opmlFile);
   const cachedFeeds = [];
 
   for (const feed of feedMetadata) {
@@ -592,7 +488,7 @@ const searchCachedFeeds = async (
     perFeedLimit = 10
   } = options;
 
-  const feedMetadata = getFeedMetadata(opmlFile);
+  const feedMetadata = await getFeedMetadata(opmlFile);
   const parsedQuery = parseQuery(query);
   const results = [];
 

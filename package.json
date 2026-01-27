@@ -1,6 +1,6 @@
 {
     "name": "neptune",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "A Node.js application that aggregates RSS/Atom feeds from an OPML file and generates a list of feeds, an aggregated HTML page, and RSS feed. Trans rights are human rights.",
     "main": "app.js",
     "scripts": {
@@ -8,7 +8,7 @@
         "start:https": "node app.js --https",
         "go": "node app.js",
         "go:https": "node app.js --https",
-        "mcp": "node mcp-server.js",
+        "test:random-feeds": "node app.js --random-feeds=10",
         "generate-cert": "node generate-cert.js"
     },
     "dependencies": {
