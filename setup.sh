@@ -10,7 +10,7 @@ mkdir -p "$BASE_DIR/output"
 # Create key files
 touch "$BASE_DIR/feeds.opml"
 cat <<EOF > "$BASE_DIR/README.md"
-# Feed Aggregator App
+# Neptune Feed Aggregator
 
 This project aggregates and processes RSS/Atom feeds listed in an OPML file and generates an aggregated HTML page and an RSS feed.
 
@@ -22,7 +22,7 @@ This project aggregates and processes RSS/Atom feeds listed in an OPML file and 
 ## To Run
 1. Navigate to the project directory:
 \`\`\`
-cd my-feed-aggregator-app
+cd neptune
 \`\`\`
 
 2. Install dependencies:
@@ -32,12 +32,16 @@ npm install
 
 3. Start the server:
 \`\`\`
-node app.js
+npm run go
 \`\`\`
 
-Access the aggregated results at:
-- HTML: [http://localhost:3000/aggregate](http://localhost:3000/aggregate)
-- RSS: [http://localhost:3000/feed](http://localhost:3000/feed)
+By default the app listens on port 8080. Access the aggregated results at:
+- HTML view: [http://localhost:8080/view](http://localhost:8080/view)
+- Aggregated RSS: [http://localhost:8080/feed](http://localhost:8080/feed)
+
+For MCP (Model Context Protocol) clients, the HTTP endpoint is:
+- MCP endpoint: [http://localhost:8080/mcp](http://localhost:8080/mcp)
+- MCP info: [http://localhost:8080/mcp/info](http://localhost:8080/mcp/info)
 EOF
 
-echo "Directory structure for the feed aggregator app created successfully."
+echo "Directory structure for the Neptune Feed Aggregator created successfully."

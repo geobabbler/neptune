@@ -10,6 +10,9 @@ const schedule = require('node-schedule');
 const ejs = require('ejs');
 const RSS = require('rss');
 const { decode } = require('html-entities');
+const CONFIG = require('./config');
+const { getFeedMetadata } = require('./lib/opml');
+const { summarizeText, extractFeedItems, extractImageUrl, extractImageFromHtml, isValidImageUrl, resolveImageUrl } = require('./lib/feeds');
 
 // MCP Server imports
 const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
@@ -21,7 +24,14 @@ const {
 const mcpHelpers = require('./mcp-helpers.js');
 
 const app = express();
-const port = 8080;
+const port = CONFIG.PORT;
+
+// CLI options
+const cliArgs = process.argv.slice(2);
+const randomFeedsArg = cliArgs.find(arg => arg.startsWith('--random-feeds='));
+const RANDOM_FEED_COUNT = randomFeedsArg
+  ? parseInt(randomFeedsArg.split('=')[1], 10) || null
+  : null;
 
 // Add EJS configuration
 app.set('view engine', 'ejs');
@@ -46,12 +56,12 @@ if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 const fetchAndCacheFeed = async (url, cachePath) => {
   try {
     const response = await axios.get(url, {
-      timeout: 10000, // 10 second timeout
+      timeout: CONFIG.FEED_HTTP_TIMEOUT_MS,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
-        'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*'
+        'User-Agent': CONFIG.USER_AGENT,
+        'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*',
       },
-      maxRedirects: 5
+      maxRedirects: 5,
     });
     fs.writeFileSync(cachePath, response.data.replace('xmlns:media=&quot;http://search.yahoo.com/mrss/&quot;', 'xmlns:media="http://search.yahoo.com/mrss/"'), 'utf8');
     return response.data.replace('xmlns:media=&quot;http://search.yahoo.com/mrss/&quot;', 'xmlns:media="http://search.yahoo.com/mrss/"');
@@ -66,25 +76,6 @@ const fetchAndCacheFeed = async (url, cachePath) => {
   }
 };
 
-// Parse OPML to extract feed metadata (URL + optional defaults)
-const parseOPML = async (opmlContent) => {
-  const result = await xml2js.parseStringPromise(opmlContent);
-  const feeds = [];
-  const outlines = result.opml.body[0].outline;
-  outlines.forEach((outline) => {
-    if (outline['$'] && outline['$'].xmlUrl) {
-      feeds.push({
-        url: outline['$'].xmlUrl,
-        title: outline['$'].title || outline['$'].text || 'Untitled',
-        description: outline['$'].description || '',
-        // Optional per-feed default image, from OPML
-        defaultImageUrl: outline['$'].defaultImageUrl || null,
-      });
-    }
-  });
-  return feeds;
-};
-
 // Minimal content filtering (strip HTML tags from titles)
 const filterFeedContent = (feedXml) => {
   const $ = cheerio.load(feedXml, { xmlMode: true });
@@ -95,6 +86,56 @@ const filterFeedContent = (feedXml) => {
   return $.xml();
 };
 
+// Cached OPML host → title map for renderFeeds
+let opmlSourceByHostCache = null;
+let opmlSourceByHostMtimeMs = 0;
+
+const getOpmlSourceByHost = async () => {
+  const opmlFile = path.join(__dirname, 'feeds.opml');
+
+  try {
+    if (!fs.existsSync(opmlFile)) {
+      return {};
+    }
+
+    const stats = fs.statSync(opmlFile);
+    const mtimeMs = stats.mtimeMs;
+
+    // Return cached map if file hasn't changed
+    if (opmlSourceByHostCache && opmlSourceByHostMtimeMs === mtimeMs) {
+      return opmlSourceByHostCache;
+    }
+
+    const opmlContent = fs.readFileSync(opmlFile, 'utf8');
+    const opmlResult = await xml2js.parseStringPromise(opmlContent);
+    const outlines = opmlResult.opml?.body?.[0]?.outline || [];
+
+    const map = {};
+    outlines.forEach((outline) => {
+      if (outline.$ && outline.$.xmlUrl) {
+        const xmlUrl = outline.$.xmlUrl;
+        const title = outline.$.title || outline.$.text || 'Untitled';
+        try {
+          const urlObj = new URL(xmlUrl);
+          const host = urlObj.hostname;
+          if (host && !map[host]) {
+            map[host] = title;
+          }
+        } catch (e) {
+          // Ignore malformed URLs in OPML
+        }
+      }
+    });
+
+    opmlSourceByHostCache = map;
+    opmlSourceByHostMtimeMs = mtimeMs;
+    return map;
+  } catch (e) {
+    console.warn('Warning: could not build OPML source map for renderFeeds:', e.message);
+    return {};
+  }
+};
+
 // Aggregate and render feeds
 // This is used for the `/view` HTML endpoint by reading the aggregated RSS
 // and turning it into a simple list of items for the template.
@@ -102,36 +143,8 @@ const renderFeeds = async (rssFeed) => {
   // Parse the aggregated RSS
   const result = await xml2js.parseStringPromise(rssFeed);
 
-  // Build a fallback map of host -> OPML feed title so that, if the
-  // aggregated item has no explicit <source>, we can still show a
-  // reasonable source name based on the originating feed's OPML entry.
-  const opmlFile = path.join(__dirname, 'feeds.opml');
-  const opmlSourceByHost = {};
-  try {
-    if (fs.existsSync(opmlFile)) {
-      const opmlContent = fs.readFileSync(opmlFile, 'utf8');
-      const opmlResult = await xml2js.parseStringPromise(opmlContent);
-      const outlines = opmlResult.opml?.body?.[0]?.outline || [];
-
-      outlines.forEach((outline) => {
-        if (outline.$ && outline.$.xmlUrl) {
-          const xmlUrl = outline.$.xmlUrl;
-          const title = outline.$.title || outline.$.text || 'Untitled';
-          try {
-            const urlObj = new URL(xmlUrl);
-            const host = urlObj.hostname;
-            if (host && !opmlSourceByHost[host]) {
-              opmlSourceByHost[host] = title;
-            }
-          } catch (e) {
-            // Ignore malformed URLs in OPML
-          }
-        }
-      });
-    }
-  } catch (e) {
-    console.warn('Warning: could not build OPML source map for renderFeeds:', e.message);
-  }
+  // Get cached host → title map from OPML
+  const opmlSourceByHost = await getOpmlSourceByHost();
 
   const items = result.rss.channel[0].item || [];
   const feedItems = items.map((item) => {
@@ -195,10 +208,19 @@ const renderFeeds = async (rssFeed) => {
 const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
   try {
     const opmlFile = path.join(__dirname, 'feeds.opml');
-    const opmlContent = fs.readFileSync(opmlFile, 'utf8');
-    const feeds = await parseOPML(opmlContent);
+    const feeds = await getFeedMetadata(opmlFile);
 
     console.log(`Found ${feeds.length} feeds in OPML`);
+
+    // Optional: test mode to aggregate a random subset of feeds
+    let selectedFeeds = feeds;
+    if (RANDOM_FEED_COUNT && RANDOM_FEED_COUNT > 0 && RANDOM_FEED_COUNT < feeds.length) {
+      selectedFeeds = [...feeds].sort(() => Math.random() - 0.5).slice(0, RANDOM_FEED_COUNT);
+      console.log(
+        `Random feed test mode enabled: aggregating ${selectedFeeds.length} of ${feeds.length} feeds`,
+      );
+    }
+
     const openstreetmapFeed = feeds.find(f => f.url && f.url.includes('openstreetmap.us'));
     if (openstreetmapFeed) {
       console.log(`OpenStreetMap US feed found: ${openstreetmapFeed.url}, title: ${openstreetmapFeed.title}`);
@@ -209,54 +231,66 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
 
     const aggregatedFeeds = [];
 
-    for (const feed of feeds) {
-      const url = feed.url;
-      const defaultImageUrl = feed.defaultImageUrl || null;
-      const feedTitle = feed.title || url;
+    // Process feeds with a simple concurrency limit for better performance
+    const concurrencyLimit = CONFIG.AGGREGATION_CONCURRENCY;
+    for (let i = 0; i < selectedFeeds.length; i += concurrencyLimit) {
+      const chunk = selectedFeeds.slice(i, i + concurrencyLimit);
 
-      const cachePath = path.join(cacheDir, `${Buffer.from(url).toString('hex')}.xml`);
-      let feedData;
+      await Promise.all(
+        chunk.map(async (feed) => {
+          const url = feed.url;
+          const defaultImageUrl = feed.defaultImageUrl || null;
+          const feedTitle = feed.title || url;
 
-      if (useCache && fs.existsSync(cachePath)) {
-        feedData = fs.readFileSync(cachePath, 'utf8');
-      } else {
-        feedData = await fetchAndCacheFeed(url, cachePath);
-      }
+          const cachePath = path.join(cacheDir, `${Buffer.from(url).toString('hex')}.xml`);
+          let feedData;
 
-      if (feedData) {
-        try {
-          const filteredData = filterFeedContent(feedData);
-          const parsedFeed = await xml2js.parseStringPromise(filteredData);
+          if (useCache && fs.existsSync(cachePath)) {
+            feedData = fs.readFileSync(cachePath, 'utf8');
+          } else {
+            feedData = await fetchAndCacheFeed(url, cachePath);
+          }
 
-          // Determine feed type and extract items
-          // Pass the feed URL as base URL for resolving relative links
-          const feedInfo = parseFeedItems(parsedFeed, url);
+          if (feedData) {
+            try {
+              const filteredData = filterFeedContent(feedData);
+              const parsedFeed = await xml2js.parseStringPromise(filteredData);
 
-          if (feedInfo && feedInfo.items.length > 0) {
-            // Apply OPML-level default image URL as the last fallback per item
-            if (defaultImageUrl && isValidImageUrl(defaultImageUrl)) {
-              feedInfo.items = feedInfo.items.map((item) => ({
-                ...item,
-                imageUrl: item.imageUrl || defaultImageUrl,
-              }));
+              // Determine feed type and extract items (shared helper)
+              const feedInfo = extractFeedItems(parsedFeed, {
+                baseUrl: url,
+                monthsBack: CONFIG.FEED_MONTHS_BACK,
+              });
+
+              if (feedInfo && feedInfo.items.length > 0) {
+                // Apply OPML-level default image URL as the last fallback per item
+                if (defaultImageUrl && isValidImageUrl(defaultImageUrl)) {
+                  feedInfo.items = feedInfo.items.map((item) => ({
+                    ...item,
+                    imageUrl: item.imageUrl || defaultImageUrl,
+                  }));
+                }
+
+                aggregatedFeeds.push(feedInfo);
+                console.log(`✓ Processed ${feedTitle}: ${feedInfo.items.length} items`);
+              } else if (feedInfo && feedInfo.items.length === 0) {
+                console.log(
+                  `⚠ Feed ${feedTitle} has no items after filtering (likely all items are older than 12 months)`,
+                );
+              } else if (!feedInfo) {
+                console.log(`⚠ Feed ${feedTitle} could not be parsed or has unsupported format`);
+              }
+            } catch (error) {
+              console.error(`✗ Error processing feed ${feedTitle}:`, error.message);
+              if (error.stack) {
+                console.error(error.stack);
+              }
             }
-
-            aggregatedFeeds.push(feedInfo);
-            console.log(`✓ Processed ${feedTitle}: ${feedInfo.items.length} items`);
-          } else if (feedInfo && feedInfo.items.length === 0) {
-            console.log(`⚠ Feed ${feedTitle} has no items after filtering (likely all items are older than 12 months)`);
-          } else if (!feedInfo) {
-            console.log(`⚠ Feed ${feedTitle} could not be parsed or has unsupported format`);
+          } else {
+            console.log(`✗ Feed ${feedTitle} could not be fetched or cached`);
           }
-        } catch (error) {
-          console.error(`✗ Error processing feed ${feedTitle}:`, error.message);
-          if (error.stack) {
-            console.error(error.stack);
-          }
-        }
-      } else {
-        console.log(`✗ Feed ${feedTitle} could not be fetched or cached`);
-      }
+        }),
+      );
     }
 
     // Generate RSS output
@@ -279,375 +313,7 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
   }
 };
 
-const summarizeText = (text, maxLength) => {
-  // Remove HTML tags
-  text = text.replace(/<[^>]*>/g, '');
-
-  // Decode HTML entities using html-entities
-  text = decode(text);
-
-  if (text.length <= maxLength) {
-    return text;
-  }
-
-  let truncatedText = text.substring(0, maxLength);
-  let lastSpaceIndex = truncatedText.lastIndexOf(" ");
-
-  if (lastSpaceIndex > 0) {
-    truncatedText = truncatedText.substring(0, lastSpaceIndex);
-  }
-
-  return truncatedText + "...";
-};
-
-// Helper function to validate image URL format and extension
-const isValidImageUrl = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  
-  try {
-    // Validate URL format
-    const urlObj = new URL(url);
-    
-    // Check for image file extensions
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'];
-    const pathname = urlObj.pathname.toLowerCase();
-    const hasImageExtension = imageExtensions.some(ext => pathname.endsWith(ext));
-    
-    // Also check if URL contains common image path patterns
-    const hasImagePattern = /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)(\?|$)/i.test(url);
-    
-    return hasImageExtension || hasImagePattern;
-  } catch (e) {
-    // Invalid URL format
-    return false;
-  }
-};
-
-// Helper function to convert relative URL to absolute
-const resolveImageUrl = (imageUrl, baseUrl) => {
-  if (!imageUrl) return null;
-  
-  try {
-    // If already absolute, return as-is
-    new URL(imageUrl);
-    return imageUrl;
-  } catch (e) {
-    // Relative URL - try to resolve using baseUrl
-    if (baseUrl) {
-      try {
-        const base = new URL(baseUrl);
-        return new URL(imageUrl, base).toString();
-      } catch (e2) {
-        // Can't resolve, return null
-        return null;
-      }
-    }
-    return null;
-  }
-};
-
-// Helper function to extract image URL from HTML content
-const extractImageFromHtml = (htmlContent, baseUrl) => {
-  if (!htmlContent || typeof htmlContent !== 'string') return null;
-  
-  try {
-    const $ = cheerio.load(htmlContent);
-    
-    // Priority 1: Look for og:image meta tag
-    const ogImage = $('meta[property="og:image"]').attr('content') || 
-                    $('meta[name="og:image"]').attr('content');
-    if (ogImage) {
-      const resolved = resolveImageUrl(ogImage, baseUrl);
-      if (resolved && isValidImageUrl(resolved)) {
-        return resolved;
-      }
-    }
-    
-    // Priority 2: Look for first img tag
-    const firstImg = $('img').first();
-    if (firstImg.length > 0) {
-      const imgSrc = firstImg.attr('src') || firstImg.attr('data-src');
-      if (imgSrc) {
-        const resolved = resolveImageUrl(imgSrc, baseUrl);
-        if (resolved && isValidImageUrl(resolved)) {
-          return resolved;
-        }
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('Error extracting image from HTML:', error);
-    return null;
-  }
-};
-
-// Helper function to extract featured image URL from feed item
-// Priority order:
-// 1. RSS enclosure (if type is image)
-// 2. og:image as direct RSS element
-// 3. RSS/Atom media:thumbnail or media:content
-// 4. First img tag from HTML description
-// 5. og:image from HTML description
-const extractImageUrl = (item, itemLink, description) => {
-  try {
-    // Priority 1: RSS enclosure (if type is image)
-    if (item.enclosure && Array.isArray(item.enclosure)) {
-      for (const enclosure of item.enclosure) {
-        const type = enclosure.$.type || enclosure.type || '';
-        if (type.startsWith('image/')) {
-          const url = enclosure.$.url || enclosure.url || '';
-          if (url && isValidImageUrl(url)) {
-            return url;
-          }
-        }
-      }
-    }
-    
-    // Priority 2: og:image as direct RSS element
-    if (item['og:image']) {
-      let ogImageUrl = null;
-      if (Array.isArray(item['og:image'])) {
-        // Could be text content or an object with attributes
-        const ogImage = item['og:image'][0];
-        ogImageUrl = typeof ogImage === 'string' ? ogImage : 
-                     ogImage._ || ogImage.$?.url || ogImage.url || ogImage.content;
-      } else if (typeof item['og:image'] === 'string') {
-        ogImageUrl = item['og:image'];
-      } else {
-        ogImageUrl = item['og:image']._ || item['og:image'].$?.url || item['og:image'].url || item['og:image'].content;
-      }
-      
-      if (ogImageUrl) {
-        const resolved = resolveImageUrl(ogImageUrl, itemLink);
-        if (resolved && isValidImageUrl(resolved)) {
-          return resolved;
-        }
-      }
-    }
-    
-    // Priority 3: RSS/Atom media:thumbnail or media:content
-    // Check media:thumbnail first (usually the featured image)
-    if (item['media:thumbnail'] && Array.isArray(item['media:thumbnail'])) {
-      const thumbnail = item['media:thumbnail'][0];
-      const url = thumbnail.$.url || thumbnail.url || '';
-      if (url && isValidImageUrl(url)) {
-        return url;
-      }
-    }
-    
-    // Check media:content for images
-    if (item['media:content'] && Array.isArray(item['media:content'])) {
-      for (const content of item['media:content']) {
-        const medium = content.$.medium || content.medium || '';
-        const type = content.$.type || content.type || '';
-        if (medium === 'image' || type.startsWith('image/')) {
-          const url = content.$.url || content.url || '';
-          if (url && isValidImageUrl(url)) {
-            return url;
-          }
-        }
-      }
-    }
-    
-    // Priority 4 & 5: Extract from HTML description
-    // This handles both img tags and og:image meta tags
-    if (description) {
-      const imageUrl = extractImageFromHtml(description, itemLink);
-      if (imageUrl) {
-        return imageUrl;
-      }
-
-      // Final fallback: scan for any image-like URL in the text/HTML
-      try {
-        const urlRegex = /https?:\/\/[^\s"'<>]+/g;
-        const matches = description.match(urlRegex) || [];
-        for (let raw of matches) {
-          // Strip common trailing punctuation that might be attached in text
-          const cleaned = raw.replace(/[),.]+$/, '');
-          if (cleaned && isValidImageUrl(cleaned)) {
-            const resolved = resolveImageUrl(cleaned, itemLink);
-            if (resolved && isValidImageUrl(resolved)) {
-              return resolved;
-            }
-          }
-        }
-      } catch (e) {
-        // Ignore fallback parsing errors
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    // Log warning but don't fail the entire item
-    console.warn('Error extracting image URL (continuing without image):', error.message);
-    return null;
-  }
-};
-
-// Helper function to parse both RSS and Atom feeds
-// baseUrl: optional base URL for resolving relative links
-const parseFeedItems = (parsedFeed, baseUrl = null) => {
-  try {
-    // Calculate date 12 months ago
-    const twelveMonthsAgo = new Date();
-    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-    
-    // Helper to resolve relative URLs
-    const resolveUrl = (url, base) => {
-      if (!url || url.startsWith('http')) return url;
-      if (!base) return url;
-      try {
-        const baseUrlObj = new URL(base);
-        return new URL(url, baseUrlObj.origin).toString();
-      } catch (e) {
-        return url;
-      }
-    };
-
-    // Check if it's an Atom feed
-    if (parsedFeed.feed) {
-      const feed = parsedFeed.feed;
-      const feedTitle = feed.title ? feed.title[0]._ || feed.title[0] : 'Untitled Feed';
-      const feedLink = feed.link.href ? feed.link[0].href || feed.link[0].href : '/list';
-
-      const items = feed.entry ? feed.entry
-        .filter(entry => {
-          const pubDate = new Date(entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : 0);
-          return pubDate > twelveMonthsAgo;
-        })
-        .map(entry => {
-          const entryLink = entry.link ? entry.link.find(l => l.$.rel === 'alternate')?.$.href || entry.link[0].$.href : '';
-          const entryDescription = entry.content ? entry.content[0]._ || entry.content[0] :
-            entry.summary ? entry.summary[0]._ || entry.summary[0] : '';
-          
-          // Extract featured image
-          const imageUrl = extractImageUrl(entry, entryLink, entryDescription);
-          
-          return {
-            title: entry.title ? entry.title[0]._ || entry.title[0] : 'Untitled',
-            description: summarizeText(entryDescription, 1000),
-            link: entryLink,
-            pubDate: entry.updated ? entry.updated[0] : entry.published ? entry.published[0] : new Date().toISOString(),
-            source: feedTitle,
-            sourceLink: feedLink,
-            imageUrl: imageUrl || null,
-            original: entry
-          };
-        }) : [];
-
-      return { title: feedTitle, items };
-    }
-
-    // Handle RSS feed
-    if (parsedFeed.rss && parsedFeed.rss.channel) {
-      const channel = parsedFeed.rss.channel[0];
-      const feedTitle = channel.title ? (channel.title[0] || 'Untitled Feed') : 'Untitled Feed';
-      let feedLink = channel.link ? (channel.link[0] || '') : '';
-      
-      // Resolve relative feed links using baseUrl or atom:link
-      if (feedLink && !feedLink.startsWith('http')) {
-        if (baseUrl) {
-          feedLink = resolveUrl(feedLink, baseUrl);
-        } else {
-          // Try to get base URL from atom:link
-          const atomLink = channel['atom:link'];
-          if (atomLink && Array.isArray(atomLink) && atomLink[0] && atomLink[0].$ && atomLink[0].$.href) {
-            try {
-              const atomLinkUrl = atomLink[0].$.href;
-              if (atomLinkUrl.startsWith('http')) {
-                feedLink = resolveUrl(feedLink, atomLinkUrl);
-              }
-            } catch (e) {
-              // If we can't resolve, keep the original
-            }
-          }
-        }
-      }
-
-      const items = channel.item ? channel.item
-        .filter(item => {
-          const pubDate = new Date(item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : 0);
-          return pubDate > twelveMonthsAgo;
-        })
-        .map(item => {
-          let itemLink = item.link ? item.link[0] : '';
-          
-          // Resolve relative item links using feedLink or baseUrl
-          if (itemLink && !itemLink.startsWith('http')) {
-            if (feedLink && feedLink.startsWith('http')) {
-              itemLink = resolveUrl(itemLink, feedLink);
-            } else if (baseUrl) {
-              itemLink = resolveUrl(itemLink, baseUrl);
-            }
-          }
-
-          // Prefer full HTML content when available (e.g., WordPress content:encoded),
-          // fall back to description otherwise.
-          const rawContent = item['content:encoded']
-            ? (item['content:encoded'][0]._ || item['content:encoded'][0] || '')
-            : (item.description ? item.description[0] : '');
-
-          // Extract featured image from the best HTML source we have
-          const imageUrl = extractImageUrl(item, itemLink, rawContent);
-
-          // Use the same HTML source for summarization
-          const summarizedDescription = summarizeText(rawContent, 1000);
-          
-          return {
-            title: item.title ? item.title[0] : 'Untitled',
-            description: summarizedDescription,
-            link: itemLink,
-            pubDate: item.pubDate ? item.pubDate[0] : item.date ? item.date[0] : new Date().toUTCString(),
-            source: feedTitle,
-            sourceLink: feedLink.toString(),
-            imageUrl: imageUrl || null,
-            original: item
-          };
-        }) : [];
-
-      return { title: feedTitle, items };
-    }
-
-    // Handle RDF (RSS 1.0) feed
-    if (parsedFeed['rdf:RDF']) {
-      const rdf = parsedFeed['rdf:RDF'];
-      const channel = rdf.channel[0];
-      const feedTitle = channel.title[0];
-      const feedLink = channel.link[0];
-      const items = rdf.item ? rdf.item
-        .filter(item => {
-          const pubDate = new Date(item['dc:date'] ? item['dc:date'][0] : 0);
-          return pubDate > twelveMonthsAgo;
-        })
-        .map(item => {
-          const itemLink = item.link ? item.link[0] : '';
-          const itemDescription = item.description ? item.description[0] : '';
-          
-          // Extract featured image
-          const imageUrl = extractImageUrl(item, itemLink, itemDescription);
-          
-          return {
-            title: item.title ? item.title[0] : 'Untitled',
-            description: summarizeText(itemDescription, 1000),
-            link: itemLink,
-            pubDate: item['dc:date'] ? item['dc:date'][0] : new Date().toUTCString(),
-            source: feedTitle,
-            sourceLink: feedLink.toString(),
-            imageUrl: imageUrl || null,
-            original: item
-          };
-        }) : [];
-
-      return { title: feedTitle, items };
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error parsing feed:', error);
-    return null;
-  }
-};
+// (Summarization and feed extraction helpers are now centralized in lib/feeds)
 
 // Generate aggregated RSS feed
 const generateRSSFeed = async (feeds) => {
@@ -671,8 +337,8 @@ const generateRSSFeed = async (feeds) => {
   );
 };
 
-// Schedule aggregation at the 5th minute of every hour
-schedule.scheduleJob('*/15 * * * *', () => {
+// Schedule aggregation using configurable cron expression
+schedule.scheduleJob(CONFIG.AGGREGATION_CRON, () => {
   console.log('Scheduled aggregation job started at:', new Date().toLocaleString());
   aggregateFeeds(false);
 });
@@ -732,16 +398,14 @@ app.get('/feed', async (req, res) => {
 // Add this function to parse OPML and return feed info
 const getFeedList = async () => {
   const opmlFile = path.join(__dirname, 'feeds.opml');
-  const opmlContent = fs.readFileSync(opmlFile, 'utf8');
-  const parser = new xml2js.Parser();
-
   try {
-    const opmlData = await parser.parseStringPromise(opmlContent);
-    const outlines = opmlData.opml.body[0].outline;
-    return outlines
-      .map(outline => ({
-        title: outline.$.title || outline.$.text,
-        xmlUrl: outline.$.htmlUrl || outline.$.xmlUrl
+    const feeds = await getFeedMetadata(opmlFile);
+    return feeds
+      .map(feed => ({
+        title: feed.title,
+        // For the list page, we want a link users can click; prefer htmlUrl if present,
+        // otherwise fall back to xmlUrl. Since lib/opml only exposes xmlUrl, we use that here.
+        xmlUrl: feed.url,
       }))
       .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
   } catch (error) {
@@ -1170,11 +834,13 @@ app.all('/mcp', async (req, res) => {
 
 // MCP info endpoint
 app.get('/mcp/info', async (req, res) => {
+  const pkg = require('./package.json');
   res.json({
     name: 'neptune-feed-cache',
-    version: '1.0.0',
+    version: pkg.version,
     transport: 'streamable-http',
-    endpoint: '/mcp'
+    endpoint: '/mcp',
+    current_time: new Date().toISOString(),
   });
 });
 

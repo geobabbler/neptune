@@ -1,10 +1,10 @@
 # MCP Server Setup for Neptune Feed Aggregator
 
-This document explains how to set up and use the MCP (Model Context Protocol) server that exposes the cached feed data via HTTP/SSE.
+This document explains how to set up and use the MCP (Model Context Protocol) server that exposes the cached feed data via HTTP (Streamable HTTP transport).
 
 ## Overview
 
-The MCP server is **integrated directly into the Express application** (`app.js`) and uses **HTTP/SSE (Server-Sent Events) transport**, making it suitable for serverless deployments. It provides a standardized interface for AI assistants to query the cached RSS/Atom feeds over the web.
+The MCP server is **integrated directly into the Express application** (`app.js`) and uses the **Streamable HTTP transport**, making it suitable for serverless deployments. It provides a standardized interface for AI assistants to query the cached RSS/Atom feeds over the web.
 
 ## Installation
 
@@ -28,9 +28,8 @@ node app.js
 ```
 
 The MCP server will be available at:
-- **SSE Endpoint:** `http://localhost:8080/mcp/sse`
-- **Messages Endpoint:** `http://localhost:8080/mcp/messages`
-- **Info Endpoint:** `http://localhost:8080/mcp`
+- **HTTP Endpoint:** `http://localhost:8080/mcp`
+- **Info Endpoint:** `http://localhost:8080/mcp/info`
 
 ## Available Tools
 
@@ -103,7 +102,7 @@ Gets the aggregated feed from the output directory (all feeds combined).
 
 ### Claude Desktop
 
-Add the following to your Claude Desktop configuration file:
+Add the following to your Claude Desktop configuration file (Streamable HTTP):
 
 **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`  
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
@@ -113,7 +112,7 @@ Add the following to your Claude Desktop configuration file:
 {
   "mcpServers": {
     "neptune-feed-cache": {
-      "url": "http://localhost:8080/mcp/sse"
+      "url": "http://localhost:8080/mcp"
     }
   }
 }
@@ -124,7 +123,7 @@ Add the following to your Claude Desktop configuration file:
 {
   "mcpServers": {
     "neptune-feed-cache": {
-      "url": "https://your-serverless-app.com/mcp/sse"
+      "url": "https://your-serverless-app.com/mcp"
     }
   }
 }
@@ -134,40 +133,37 @@ Add the following to your Claude Desktop configuration file:
 
 ### VS Code / Cursor
 
-If using an MCP extension for VS Code or Cursor, configure it with the SSE endpoint URL:
+If using an MCP extension for VS Code or Cursor, configure it with the HTTP endpoint URL:
 ```
-http://localhost:8080/mcp/sse
+http://localhost:8080/mcp
 ```
 (or your production URL)
 
 ## How It Works
 
 1. The MCP server is integrated into the Express application (`app.js`)
-2. It uses **SSE (Server-Sent Events)** transport for real-time communication
-3. Clients connect via GET request to `/mcp/sse` to establish the SSE connection
-4. Clients send MCP requests via POST to `/mcp/messages`
-5. The server reads from the `cache/` directory (same cache used by the aggregator)
-6. It parses cached XML files using shared helper functions (`mcp-helpers.js`)
-7. It exposes the data through MCP tools that can be called by AI assistants
+2. It uses **Streamable HTTP** transport for stateless request/response handling
+3. Clients send JSON-RPC MCP requests via POST to `/mcp`
+4. The server reads from the `cache/` directory (same cache used by the aggregator)
+5. It parses cached XML files using shared helper functions (`mcp-helpers.js`)
+6. It exposes the data through MCP tools that can be called by AI assistants
 
 ## Architecture
 
 ```
 ┌─────────────────┐
 │  MCP Client     │
-│ (Claude Desktop)│
+│ (Claude/Desktop)│
 └────────┬────────┘
          │
-         │ HTTP/SSE
+         │ HTTP (Streamable)
          │
          ▼
 ┌─────────────────┐
 │  Express App    │
 │   (app.js)      │
 │                 │
-│  GET /mcp/sse   │◄─── SSE Connection
-│  POST /mcp/     │◄─── MCP Messages
-│     messages    │
+│  POST /mcp      │◄─── MCP Messages
 └────────┬────────┘
          │
          │ Reads from
@@ -206,11 +202,6 @@ If accessing from a web browser, you may need to configure CORS headers. The cur
 
 ## Troubleshooting
 
-### "No active SSE session"
-- Ensure the client connects to `/mcp/sse` first before sending messages
-- Check that the Express server is running
-- Verify the URL is correct (including protocol: `http://` or `https://`)
-
 ### "Feed not found in cache"
 - The feed may not have been cached yet. Run the main aggregator to populate the cache
 - Check that the `cache/` directory exists and contains feed files
@@ -236,23 +227,13 @@ You can test the MCP endpoints directly:
    curl http://localhost:8080/mcp
    ```
 
-2. **Test SSE connection (in browser or with curl):**
+2. **Send a test MCP message:**
    ```bash
-   curl -N http://localhost:8080/mcp/sse
-   ```
-
-3. **Send a test message (after establishing SSE connection):**
-   ```bash
-   curl -X POST http://localhost:8080/mcp/messages \
+   curl -X POST http://localhost:8080/mcp \
      -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
    ```
 
 ## Migration from stdio-based MCP Server
 
-If you were using the standalone `mcp-server.js` (stdio-based), note that:
-
-- The stdio version (`mcp-server.js`) is still available but not used by default
-- The HTTP/SSE version is now integrated into `app.js`
-- Update your Claude Desktop config to use `url` instead of `command`/`args`
-- The helper functions are now in `mcp-helpers.js` for reuse
+If you previously used the standalone `mcp-server.js` (stdio-based), it has been removed in favor of the integrated HTTP MCP server in `app.js`. Update any client configs to use the HTTP endpoint as shown above.
