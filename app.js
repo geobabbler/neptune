@@ -542,7 +542,7 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'search_feed_items',
-        description: 'Search across all cached feeds for items matching a query string. Supports multi-term search (AND/OR), field-specific queries (title:term), quoted phrases, fuzzy matching, date ranges, and feed filtering. Results are relevance-scored and sorted by relevance then date. IMPORTANT: When users provide natural language dates (e.g., "Q3 2025", "last month"), convert them to ISO 8601 format (YYYY-MM-DD) before using dateFrom/dateTo parameters.',
+        description: 'Search across all cached feeds for items matching a query string. Supports multi-term search (AND/OR), field-specific queries (title:term), quoted phrases, fuzzy matching, date ranges, and feed filtering. Results are relevance-scored and sorted by relevance then date. IMPORTANT: When users provide natural language dates (e.g., "Q3 2025", "last month"), convert them to ISO 8601 format (YYYY-MM-DD) before using dateFrom/dateTo parameters. Use compact=true and maxDescriptionLength=150-200 to reduce response size for LLM context windows.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -603,6 +603,18 @@ Always provide dates in YYYY-MM-DD format.`,
             perFeedLimit: {
               type: 'number',
               description: 'Maximum results per feed before merging (default: 10). Higher values improve recall but may slow search.',
+            },
+            maxDescriptionLength: {
+              type: 'number',
+              description: 'Maximum length for item descriptions in results (default: 300). Use smaller values (100-200) to reduce context window usage. Descriptions are truncated at word boundaries.',
+            },
+            compact: {
+              type: 'boolean',
+              description: 'Return only essential fields (title, link, pubDate, source, relevanceScore). Excludes description, imageUrl, sourceLink, and matchPositions. Use this to minimize context window usage (default: false).',
+            },
+            includeOriginal: {
+              type: 'boolean',
+              description: 'Include the full parsed XML item in results. This significantly increases response size and should only be used when needed (default: false).',
             },
           },
           required: ['query'],
@@ -679,7 +691,10 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
           dateFrom = null,
           dateTo = null,
           feedUrls = null,
-          perFeedLimit = 10
+          perFeedLimit = 10,
+          maxDescriptionLength = 300,
+          compact = false,
+          includeOriginal = false
         } = args;
 
         const searchResult = await mcpHelpers.searchCachedFeeds(
@@ -693,7 +708,10 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
             dateFrom,
             dateTo,
             feedUrls,
-            perFeedLimit
+            perFeedLimit,
+            maxDescriptionLength: Math.max(50, Math.min(1000, maxDescriptionLength)), // Clamp between 50-1000
+            compact,
+            includeOriginal
           }
         );
 

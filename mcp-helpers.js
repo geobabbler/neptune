@@ -529,7 +529,10 @@ const searchCachedFeeds = async (
     dateFrom = null,
     dateTo = null,
     feedUrls = null,
-    perFeedLimit = 10
+    perFeedLimit = 10,
+    maxDescriptionLength = 300, // Truncate descriptions for LLM context
+    compact = false, // Return only essential fields
+    includeOriginal = false // Exclude full parsed XML to save space
   } = options;
 
   const feedMetadata = await getFeedMetadata(opmlFile);
@@ -603,13 +606,38 @@ const searchCachedFeeds = async (
             }
 
             // For OR logic, include items with any match
-            return {
-              ...item,
+            // Build result item with optional field filtering
+            const resultItem = {
+              title: item.title,
+              link: item.link,
+              pubDate: item.pubDate,
+              source: item.source,
               feedUrl: feed.url,
               relevanceScore: relevance.score,
               matchedFields: relevance.matchedFields,
-              matchPositions: relevance.matchPositions
             };
+            
+            // Add optional fields based on compact mode
+            if (!compact) {
+              // Truncate description if specified
+              if (item.description) {
+                const desc = item.description.length > maxDescriptionLength
+                  ? summarizeText(item.description, maxDescriptionLength)
+                  : item.description;
+                resultItem.description = desc;
+              }
+              
+              resultItem.sourceLink = item.sourceLink;
+              resultItem.imageUrl = item.imageUrl;
+              resultItem.matchPositions = relevance.matchPositions;
+            }
+            
+            // Include original parsed XML only if explicitly requested
+            if (includeOriginal) {
+              resultItem.original = item.original;
+            }
+            
+            return resultItem;
           })
           .filter(item => item !== null && item.relevanceScore > 0)
           .sort((a, b) => b.relevanceScore - a.relevanceScore)
