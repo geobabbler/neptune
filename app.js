@@ -96,45 +96,99 @@ const filterFeedContent = (feedXml) => {
 };
 
 // Aggregate and render feeds
-const renderFeeds = (rssFeed) => {
-  return new Promise((resolve, reject) => {
-    xml2js.parseString(rssFeed, (err, result) => {
-      if (err) reject(err);
+// This is used for the `/view` HTML endpoint by reading the aggregated RSS
+// and turning it into a simple list of items for the template.
+const renderFeeds = async (rssFeed) => {
+  // Parse the aggregated RSS
+  const result = await xml2js.parseStringPromise(rssFeed);
 
-      const items = result.rss.channel[0].item || [];
-      const feedItems = items.map((item) => {
-        // Extract enclosure image URL if present
-        let imageUrl = null;
-        if (item.enclosure && Array.isArray(item.enclosure)) {
-          const enclosure = item.enclosure[0]; // Take first enclosure
-          const type = enclosure.$.type || enclosure.type || '';
-          if (type.startsWith('image/')) {
-            imageUrl = enclosure.$.url || enclosure.url || '';
+  // Build a fallback map of host -> OPML feed title so that, if the
+  // aggregated item has no explicit <source>, we can still show a
+  // reasonable source name based on the originating feed's OPML entry.
+  const opmlFile = path.join(__dirname, 'feeds.opml');
+  const opmlSourceByHost = {};
+  try {
+    if (fs.existsSync(opmlFile)) {
+      const opmlContent = fs.readFileSync(opmlFile, 'utf8');
+      const opmlResult = await xml2js.parseStringPromise(opmlContent);
+      const outlines = opmlResult.opml?.body?.[0]?.outline || [];
+
+      outlines.forEach((outline) => {
+        if (outline.$ && outline.$.xmlUrl) {
+          const xmlUrl = outline.$.xmlUrl;
+          const title = outline.$.title || outline.$.text || 'Untitled';
+          try {
+            const urlObj = new URL(xmlUrl);
+            const host = urlObj.hostname;
+            if (host && !opmlSourceByHost[host]) {
+              opmlSourceByHost[host] = title;
+            }
+          } catch (e) {
+            // Ignore malformed URLs in OPML
           }
         }
-        
-        return {
-          title: item.title ? item.title[0] : 'No title',
-          description: item.description ? item.description[0] : 'No description',
-          link: item.link ? item.link[0] : '#',
-          pubDate: item.pubDate ? item.pubDate[0] : 'Unknown date',
-          source: item.source ? item.source[0]._ : 'Unknown source',
-          author: item.author ? item.author[0] :
-            item['dc:creator'] ? item['dc:creator'][0] : null,
-          imageUrl: imageUrl || null
-        };
       });
+    }
+  } catch (e) {
+    console.warn('Warning: could not build OPML source map for renderFeeds:', e.message);
+  }
 
-      // Sort items by publication date (newest first)
-      feedItems.sort((a, b) => {
-        const dateA = new Date(a.pubDate);
-        const dateB = new Date(b.pubDate);
-        return dateB - dateA;
-      });
+  const items = result.rss.channel[0].item || [];
+  const feedItems = items.map((item) => {
+    // Extract enclosure image URL if present
+    let imageUrl = null;
+    if (item.enclosure && Array.isArray(item.enclosure)) {
+      const enclosure = item.enclosure[0]; // Take first enclosure
+      const type = enclosure.$.type || enclosure.type || '';
+      if (type.startsWith('image/')) {
+        imageUrl = enclosure.$.url || enclosure.url || '';
+      }
+    }
 
-      resolve(feedItems);
-    });
+    // Determine source:
+    // 1. Prefer <source> element from aggregated RSS
+    // 2. Fallback to OPML feed title based on link hostname
+    // 3. Last resort: "Unknown source"
+    let source = 'Unknown source';
+    if (item.source && Array.isArray(item.source) && item.source[0]) {
+      const srcNode = item.source[0];
+      if (typeof srcNode === 'string') {
+        source = srcNode;
+      } else if (srcNode._) {
+        source = srcNode._;
+      }
+    } else if (item.link && item.link[0]) {
+      try {
+        const linkUrl = new URL(item.link[0]);
+        const host = linkUrl.hostname;
+        if (host && opmlSourceByHost[host]) {
+          source = opmlSourceByHost[host];
+        }
+      } catch (e) {
+        // If link is not a valid absolute URL, keep existing source value
+      }
+    }
+    
+    return {
+      title: item.title ? item.title[0] : 'No title',
+      description: item.description ? item.description[0] : 'No description',
+      link: item.link ? item.link[0] : '#',
+      pubDate: item.pubDate ? item.pubDate[0] : 'Unknown date',
+      source,
+      author: item.author ? item.author[0] :
+        item['dc:creator'] ? item['dc:creator'][0] : null,
+      imageUrl: imageUrl || null
+    };
   });
+
+  // Sort items by publication date (newest first)
+  feedItems.sort((a, b) => {
+    const dateA = new Date(a.pubDate);
+    const dateB = new Date(b.pubDate);
+    return dateB - dateA;
+  });
+
+  return feedItems;
 };
 
 // Main aggregation function

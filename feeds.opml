@@ -36,6 +36,7 @@
     <outline text="GeomMob" title="GeoMob" description="" type="rss" version="RSS" htmlUrl="https://thegeomob.com/" xmlUrl="https://thegeomob.com/feed.xml"/>
     <outline text="geoMusings" title="geoMusings" type="rss" xmlUrl="https://blog.geomusings.com/feed" defaultImageUrl="https://blog.geomusings.com/wp-content/uploads/2024/03/mj_aerail4.webp"/>
     <outline text="geoObserver" title="geoObserver" description="" type="rss" version="RSS" htmlUrl="https://geoobserver.de" xmlUrl="https://geoobserver.de/feed/" defaultImageUrl="https://geoobserver.de/wp-content/uploads/2024/05/geoObserver_Banner_23.png"/>
+    <outline text="GeoOwl" title="GeoOwl" description="" type="rss" version="RSS" htmlUrl="https://www.geoowl.com" xmlUrl="https://www.geoowl.com/feed/" defaultImageUrl="https://www.geoowl.com/wp-content/themes/geoowl/assets/images/logo.svg"/>
     <outline text="GeoSearch" title="GeoSearch" description="" type="rss" version="RSS" htmlUrl="https://geosearch.com" xmlUrl="https://geosearch.com/feed/"/>
     <outline text="GeoSolutions Group" title="GeoSolutions Group" description="" type="rss" version="RSS" htmlUrl="https://www.geosolutionsgroup.com" xmlUrl="https://www.geosolutionsgroup.com/category/blog/feed/" defaultImageUrl="https://www.geosolutionsgroup.com/wp-content/themes/zaki/img/logo.png"/>
     <outline text="Geospatial Digest" title="Geospatial Digest" description="" type="rss" version="RSS" htmlUrl="https://geospatialdigest.substack.com" xmlUrl="https://geospatialdigest.substack.com/feed"/>
