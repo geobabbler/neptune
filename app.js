@@ -22,6 +22,7 @@ const {
   ListToolsRequestSchema,
 } = require('@modelcontextprotocol/sdk/types.js');
 const mcpHelpers = require('./mcp-helpers.js');
+const mcpCache = require('./lib/mcp-cache');
 
 const app = express();
 const port = CONFIG.PORT;
@@ -230,6 +231,7 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
     }
 
     const aggregatedFeeds = [];
+    const feedMetadataForIndex = []; // Track metadata for MCP index
 
     // Process feeds with a simple concurrency limit for better performance
     const concurrencyLimit = CONFIG.AGGREGATION_CONCURRENCY;
@@ -271,6 +273,25 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
                   }));
                 }
 
+                // Write MCP cache files (metadata index and item cache)
+                // This is isolated to MCP - aggregation workflow is unaffected
+                try {
+                  mcpCache.writeItemCache(cacheDir, url, feedInfo);
+                  
+                  // Track metadata for index
+                  feedMetadataForIndex.push({
+                    url,
+                    title: feedTitle,
+                    itemCount: feedInfo.items.length,
+                    lastUpdated: fs.existsSync(cachePath)
+                      ? fs.statSync(cachePath).mtime.toISOString()
+                      : new Date().toISOString(),
+                  });
+                } catch (cacheError) {
+                  // Non-fatal - log but don't fail aggregation
+                  console.warn(`Warning: Failed to write MCP cache for ${feedTitle}:`, cacheError.message);
+                }
+
                 aggregatedFeeds.push(feedInfo);
                 console.log(`✓ Processed ${feedTitle}: ${feedInfo.items.length} items`);
               } else if (feedInfo && feedInfo.items.length === 0) {
@@ -291,6 +312,14 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
           }
         }),
       );
+    }
+
+    // Write MCP metadata index (for fast feed listing)
+    try {
+      mcpCache.writeMetadataIndex(cacheDir, feedMetadataForIndex);
+    } catch (cacheError) {
+      // Non-fatal - log but don't fail aggregation
+      console.warn('Warning: Failed to write MCP metadata index:', cacheError.message);
     }
 
     // Generate RSS output
@@ -598,31 +627,38 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'get_feed_items': {
         const { feedUrl, limit = 50 } = args;
         const cachePath = mcpHelpers.getCachePath(cacheDir, feedUrl);
-        const parsedFeed = await mcpHelpers.parseCachedFeed(cachePath);
         
-        if (!parsedFeed) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Feed not found in cache: ${feedUrl}`,
-              },
-            ],
-            isError: true,
-          };
-        }
-
-        const feedInfo = mcpHelpers.extractFeedItems(parsedFeed);
+        // Try item cache first (optimized path)
+        let feedInfo = await mcpHelpers.getFeedItemsWithCache(cacheDir, feedUrl, null);
+        
+        // Fallback to parsing XML if cache miss
         if (!feedInfo) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Could not parse feed: ${feedUrl}`,
-              },
-            ],
-            isError: true,
-          };
+          const parsedFeed = await mcpHelpers.parseCachedFeed(cachePath);
+          
+          if (!parsedFeed) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: `Feed not found in cache: ${feedUrl}`,
+                },
+              ],
+              isError: true,
+            };
+          }
+
+          feedInfo = await mcpHelpers.getFeedItemsWithCache(cacheDir, feedUrl, parsedFeed);
+          if (!feedInfo) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: `Could not parse feed: ${feedUrl}`,
+                },
+              ],
+              isError: true,
+            };
+          }
         }
 
         const items = feedInfo.items.slice(0, limit);
