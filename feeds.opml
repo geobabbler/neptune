@@ -88,6 +88,7 @@
     <outline text="PostGIS" title="PostGIS" description="" type="rss" version="RSS" htmlUrl="https://postgis.net/" xmlUrl="https://postgis.net/feed.xml"/>
     <outline text="Project Geospatial" title="Project Geospatial" description="" type="rss" version="RSS" htmlUrl="https://projectgeospatial.org" xmlUrl="https://projectgeospatial.org/podcast-archive?format=rss"/>
     <outline text="QGIS.org blog" title="QGIS.org blog" description="" type="rss" version="RSS" htmlUrl="https://blog.qgis.org/" xmlUrl="https://blog.qgis.org/feed/"/>
+    <outline text="Radiant Earth" title="Radiant Earth" description="" type="rss" version="RSS" htmlUrl="https://www.radiant.earth" xmlUrl="https://radiant.earth/blog/index.xml" />
     <outline text="Robin Wilson's Blog" title="Robin Wilson's Blog" description="" type="rss" version="RSS" htmlUrl="https://blog.rtwilson.com/feed/" xmlUrl="https://blog.rtwilson.com/feed/"/>
     <outline text="Sanborn" title="Sanborn" type="rss" xmlUrl="https://sanborn.com/feed/"/>
     <outline text="Something About Maps" title="Something About Maps" description="" type="rss" version="RSS" htmlUrl="https://somethingaboutmaps.wordpress.com" xmlUrl="https://somethingaboutmaps.wordpress.com/feed/"/>
