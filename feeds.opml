@@ -34,7 +34,7 @@
     <outline text="Geography Realm" title="Geography Realm" description="" type="rss" version="RSS" htmlUrl="https://www.geographyrealm.com" xmlUrl="https://www.geographyrealm.com/feed/"/>
     <outline text="GeoHipster" title="GeoHipster" description="GeoHipster is a community of GIS professionals and enthusiasts in the Boston area." type="rss" version="RSS" htmlUrl="https://www.geohipster.com/" xmlUrl="https://www.geohipster.com/feed/"/>
     <outline text="Geomermaids" title="Geomermaids" description="" type="rss" version="RSS" htmlUrl="https://geomermaids.com" xmlUrl="https://geomermaids.com/rss.xml"/>
-    <outline text="GeomMob" title="GeoMob" description="" type="rss" version="RSS" htmlUrl="https://thegeomob.com/" xmlUrl="https://thegeomob.com/feed.xml"/>
+    <outline text="GeomMob" title="GeoMob" description="" type="rss" version="RSS" htmlUrl="https://thegeomob.com/" xmlUrl="https://thegeomob.com/feed.xml" defaultImageUrl="https://thegeomob.com/images/geomob-logo.png"/>
     <outline text="geoMusings" title="geoMusings" type="rss" xmlUrl="https://blog.geomusings.com/feed" defaultImageUrl="https://blog.geomusings.com/wp-content/uploads/2024/03/mj_aerail4.webp"/>
     <outline text="geoObserver" title="geoObserver" description="" type="rss" version="RSS" htmlUrl="https://geoobserver.de" xmlUrl="https://geoobserver.de/feed/" defaultImageUrl="https://geoobserver.de/wp-content/uploads/2024/05/geoObserver_Banner_23.png"/>
     <outline text="GeoOwl" title="GeoOwl" description="" type="rss" version="RSS" htmlUrl="https://www.geoowl.com" xmlUrl="https://www.geoowl.com/feed/" defaultImageUrl="https://www.geoowl.com/wp-content/themes/geoowl/assets/images/logo.svg"/>
