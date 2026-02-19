@@ -22,6 +22,7 @@
     <outline text="Digital EBP" title="Digital EBP" description="" type="rss" version="RSS" htmlUrl="https://digital.ebp.ch" xmlUrl="https://digital.ebp.ch/feed/"/>
     <outline text="Earth Imaging Journal" title="Earth Imaging Journal" description="" type="rss" version="RSS" htmlUrl="https://feeds.feedburner.com/EIJournal" xmlUrl="https://feeds.feedburner.com/EIJournal"/>
     <outline text="Esri" title="Esri" type="rss" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog" defaultImageUrl="https://www.esri.com/content/dam/esrisites/en-us/about/about/about-2022/assets/about-company-st-jack-bg.jpg"/>
+    <outline text="Foursquare" title="Foursquare" description="" type="rss" version="RSS" htmlUrl="https://foursquare.com/resources/#blog" xmlUrl="https://foursquare.com/feed/" defaultImageUrl="https://upload.wikimedia.org/wikipedia/commons/f/f8/FOURSQUARE_text_logo_2021.svg"/>
     <outline text="Free and Open Source GIS Ramblings" title="Free and Open Source GIS Ramblings" description="Anita Graser's blog about free and open source GIS software" type="rss" version="RSS" htmlUrl="https://anitagraser.com/" xmlUrl="http://anitagraser.com/feed/"/>
     <outline text="Fulcrum" title="Fulcrum" description="" type="rss" version="RSS" htmlUrl="https://www.fulcrumapp.com" xmlUrl="https://www.fulcrumapp.com/feed"/>
     <outline text="gadom.ski" title="gadom.ski" description="" type="rss" version="RSS" htmlUrl="https://www.gadom.ski" xmlUrl="https://www.gadom.ski/atom.xml"/>
