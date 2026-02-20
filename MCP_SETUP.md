@@ -28,8 +28,9 @@ node app.js
 ```
 
 The MCP server will be available at:
-- **HTTP Endpoint:** `http://localhost:8080/mcp`
+- **Streamable HTTP (recommended):** `http://localhost:8080/mcp`
 - **Info Endpoint:** `http://localhost:8080/mcp/info`
+- **Legacy HTTP+SSE:** `http://localhost:8080/sse` (GET to establish stream) + `http://localhost:8080/messages` (POST for client messages)
 
 ## Available Tools
 
@@ -138,6 +139,15 @@ If using an MCP extension for VS Code or Cursor, configure it with the HTTP endp
 http://localhost:8080/mcp
 ```
 (or your production URL)
+
+### Legacy HTTP+SSE (protocol 2024-11-05)
+
+For clients that require the deprecated HTTP+SSE transport:
+
+- **GET** `http://localhost:8080/sse` — establish the SSE stream (server → client)
+- **POST** `http://localhost:8080/messages?sessionId=<id>` — send JSON-RPC messages (client → server)
+
+The session ID is provided by the server in the SSE stream's endpoint event. No authentication is required.
 
 ## How It Works
 

@@ -17,6 +17,7 @@ const { summarizeText, extractFeedItems, extractImageUrl, extractImageFromHtml, 
 // MCP Server imports
 const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
 const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/server/streamableHttp.js');
+const { SSEServerTransport } = require('@modelcontextprotocol/sdk/server/sse.js');
 const {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -497,21 +498,22 @@ app.get('/version', (req, res) => {
 // MCP Server Setup (Streamable HTTP Transport)
 // ============================================================================
 
-// Initialize MCP Server
-const mcpServer = new Server(
-  {
-    name: 'neptune-feed-cache',
-    version: '1.0.0',
-  },
-  {
-    capabilities: {
-      tools: {},
+// Factory to create a configured MCP server (used for both Streamable HTTP and legacy SSE)
+function createNeptuneMcpServer() {
+  const server = new Server(
+    {
+      name: 'neptune-feed-cache',
+      version: '1.0.0',
     },
-  }
-);
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
 
-// List available tools
-mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
+  // List available tools
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
@@ -637,8 +639,8 @@ Always provide dates in YYYY-MM-DD format.`,
   };
 });
 
-// Handle tool calls
-mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
+  // Handle tool calls
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   const opmlFile = path.join(__dirname, 'feeds.opml');
 
@@ -754,6 +756,12 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
+  return server;
+}
+
+// Initialize MCP server for Streamable HTTP
+const mcpServer = createNeptuneMcpServer();
+
 // Initialize Streamable HTTP Transport
 // Using stateless mode (no sessionIdGenerator) for serverless compatibility
 const mcpTransport = new StreamableHTTPServerTransport({
@@ -850,6 +858,73 @@ app.get('/mcp/info', async (req, res) => {
   });
 });
 
+// ============================================================================
+// Legacy HTTP+SSE Transport (protocol version 2024-11-05)
+// ============================================================================
+// Store SSE transports by session ID (no authentication required)
+const sseTransports = {};
+
+// GET /sse - establish SSE stream (server -> client)
+app.get('/sse', async (req, res) => {
+  const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+  console.log(`[SSE] GET /sse from ${clientIp}`);
+  try {
+    const transport = new SSEServerTransport('/messages', res);
+    const sessionId = transport.sessionId;
+    sseTransports[sessionId] = transport;
+
+    transport.onclose = () => {
+      console.log(`[SSE] Transport closed for session ${sessionId}`);
+      delete sseTransports[sessionId];
+    };
+
+    const server = createNeptuneMcpServer();
+    await server.connect(transport);
+    console.log(`[SSE] Established stream for session ${sessionId}`);
+  } catch (error) {
+    console.error('[SSE] Error establishing stream:', error);
+    if (!res.headersSent) {
+      res.status(500).send('Error establishing SSE stream');
+    }
+  }
+});
+
+// POST /messages - receive client JSON-RPC messages (client -> server)
+app.post('/messages', async (req, res) => {
+  const sessionId = req.query.sessionId;
+  if (!sessionId) {
+    res.status(400).send('Missing sessionId parameter');
+    return;
+  }
+  const transport = sseTransports[sessionId];
+  if (!transport) {
+    res.status(404).send('Session not found');
+    return;
+  }
+  try {
+    await transport.handlePostMessage(req, res, req.body);
+  } catch (error) {
+    console.error('[SSE] Error handling POST:', error);
+    if (!res.headersSent) {
+      res.status(500).send('Error handling request');
+    }
+  }
+});
+
+// CORS preflight for /sse and /messages
+app.options('/sse', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(200).end();
+});
+app.options('/messages', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(200).end();
+});
+
 // Start server
 const useHttps = process.env.USE_HTTPS === 'true' || process.argv.includes('--https');
 
@@ -874,6 +949,7 @@ if (useHttps) {
   https.createServer(options, app).listen(port, () => {
     console.log(`✅ Feed aggregator app listening at https://localhost:${port}`);
     console.log(`✅ MCP server (Streamable HTTP) available at https://localhost:${port}/mcp`);
+    console.log(`✅ MCP server (legacy HTTP+SSE) available at https://localhost:${port}/sse`);
     console.log(`\n⚠️  Using self-signed certificate. Browsers will show a security warning.`);
     console.log(`   Click "Advanced" → "Proceed to localhost" to continue.`);
   });
@@ -881,5 +957,6 @@ if (useHttps) {
   app.listen(port, () => {
     console.log(`Feed aggregator app listening at http://localhost:${port}`);
     console.log(`MCP server (Streamable HTTP) available at http://localhost:${port}/mcp`);
+    console.log(`MCP server (legacy HTTP+SSE) available at http://localhost:${port}/sse`);
   });
 }
