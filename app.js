@@ -792,11 +792,18 @@ app.all('/mcp', async (req, res) => {
       return;
     }
 
+    // POST requests require a parsed JSON body (express.json() must run first)
+    if (req.method === 'POST' && req.body === undefined) {
+      console.error(`[${timestamp}] ${req.method} /mcp | IP: ${clientIp} | Body undefined - check Content-Type and body size limit`);
+      if (!res.headersSent) res.status(400).json({ error: 'Request body required. Ensure Content-Type: application/json and body is within size limit.' });
+      return;
+    }
+
     // Extract MCP request info from body (if JSON-RPC)
     let mcpMethod = null;
     let toolName = null;
     let requestId = null;
-    
+
     if (req.body && typeof req.body === 'object') {
       mcpMethod = req.body.method || null;
       requestId = req.body.id || null;
@@ -839,6 +846,7 @@ app.all('/mcp', async (req, res) => {
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error(`[${timestamp}] ${req.method} /mcp | IP: ${clientIp} | ERROR: ${error.message} | Time: ${duration}ms`);
+    console.error(`  Error name: ${error.name} | Body present: ${req.body !== undefined} | Content-Type: ${req.headers['content-type']}`);
     if (error.stack) console.error(error.stack);
 
     if (!res.headersSent) {

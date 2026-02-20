@@ -210,6 +210,34 @@ For long-running connections, consider:
 ### CORS Configuration
 If accessing from a web browser, you may need to configure CORS headers. The current implementation includes basic CORS headers, but you may need to customize them for your domain.
 
+### Multi-Pod / Load-Balanced Deployments (Kubernetes, etc.)
+
+The Streamable HTTP transport keeps in-memory state per pod. The MCP handshake requires:
+1. Client sends `initialize` → server responds
+2. Client sends `notifications/initialized` → server must be the same instance
+
+If these requests hit different pods (e.g. `initialize` → pod A, `notifications/initialized` → pod B), the second request will fail with 500 because pod B never received the initialize.
+
+**Fix: Enable session affinity (sticky sessions)** so both requests go to the same pod.
+
+**Kubernetes (nginx ingress):**
+```yaml
+annotations:
+  nginx.ingress.kubernetes.io/affinity: "cookie"
+  nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+```
+
+**Kubernetes Service (ClientIP affinity):**
+```yaml
+spec:
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+```
+
+Alternatively, scale to 1 replica if MCP traffic is low.
+
 ## Troubleshooting
 
 ### "Feed not found in cache"
@@ -221,6 +249,9 @@ If accessing from a web browser, you may need to configure CORS headers. The cur
 - The cached feed file may be corrupted or in an unexpected format
 - Check the cache file manually: `cache/[hex-encoded-url].xml`
 - Try triggering a rebuild: `POST /rebuild`
+
+### 500 on `notifications/initialized`
+- Usually caused by **load balancing across multiple pods**. The `initialize` request hits one pod, but `notifications/initialized` hits another that never received the init. Enable session affinity (see "Multi-Pod / Load-Balanced Deployments" above).
 
 ### Connection Issues
 - **Local:** Ensure the server is running on the expected port (default: 8080)
