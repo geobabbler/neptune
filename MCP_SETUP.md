@@ -230,19 +230,26 @@ If accessing from a web browser, you may need to configure CORS headers. The cur
 
 ### Testing the MCP Server
 
-You can test the MCP endpoints directly:
+You can test the MCP endpoints as follows:
 
-1. **Check server info:**
+1. **Quick check (server info):**
    ```bash
-   curl http://localhost:8080/mcp
+   curl http://localhost:8080/mcp/info
    ```
 
-2. **Send a test MCP message:**
+2. **Full test (Streamable HTTP /mcp endpoint):**
    ```bash
-   curl -X POST http://localhost:8080/mcp \
-     -H "Content-Type: application/json" \
-     -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+   node test-mcp.js
    ```
+   This uses the MCP SDK client to connect, initialize, list tools, and call `list_cached_feeds`.
+
+3. **Manual curl** (Streamable HTTP requires an initialize handshake first; responses are delivered via SSE, so raw curl is awkward. Prefer the test script or an MCP client.)
+
+4. **Test the legacy SSE endpoint:**
+   ```bash
+   node test-sse.js
+   ```
+   Or manually: connect to `GET http://localhost:8080/sse` to receive the `endpoint` event with `sessionId`, then POST JSON-RPC to `http://localhost:8080/messages?sessionId=<id>`.
 
 ## Migration from stdio-based MCP Server
 

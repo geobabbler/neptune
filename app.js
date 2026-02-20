@@ -839,7 +839,8 @@ app.all('/mcp', async (req, res) => {
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error(`[${timestamp}] ${req.method} /mcp | IP: ${clientIp} | ERROR: ${error.message} | Time: ${duration}ms`);
-    
+    if (error.stack) console.error(error.stack);
+
     if (!res.headersSent) {
       res.status(500).json({ error: error.message });
     }
