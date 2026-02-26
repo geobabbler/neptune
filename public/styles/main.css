@@ -6,6 +6,11 @@ body {
     line-height: 1.6;
     color: #333;
     background-color: #f5f5f5;
+    overflow-x: hidden;
+}
+
+body.briefing-page {
+    max-width: 800px;
 }
 
 .site-header {
@@ -74,6 +79,9 @@ h5 {
 
 .feed-description {
     margin: 15px 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .feed-description img {

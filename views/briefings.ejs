@@ -1,32 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GeoFeeds Aggregated Feed Sources</title>
+    <title>GeoFeeds Briefings</title>
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="/images/geofeeds_logo.png">
     <link rel="stylesheet" href="/styles/main.css">
 </head>
 <body>
-    <h1>GeoFeeds Sources (<%= feeds.length %>)</h1>
+    <h1>GeoFeeds Briefings (<%= briefings.length %>)</h1>
     <div class="feed-list">
-        <% feeds.forEach(function(feed) { %>
+        <% briefings.forEach(function(briefing) { %>
             <div class="feed-source-item">
-                <a href="<%= feed.xmlUrl %>" target="_blank"><%= feed.title %></a>
+                <a href="<%= briefing.url %>"><%= briefing.title %></a>
             </div>
         <% }); %>
     </div>
 <!-- Default Statcounter code for GeoFeeds https://geofeeds.co -->
+<!-- Default Statcounter code for GeoFeeds
+https://geofeeds.co -->
 <script type="text/javascript">
-    var sc_project=<%= process.env.sc_project%>; 
+    var sc_project=13087567; 
     var sc_invisible=1; 
-    var sc_security="<%= process.env.sc_security%>"; 
+    var sc_security="3a2f1e85"; 
     </script>
     <script type="text/javascript"
-    src="https://www.statcounter.com/counter/counter.js" async></script>
+    src="https://www.statcounter.com/counter/counter.js"
+    async></script>
     <noscript><div class="statcounter"><a title="Web Analytics"
-    href="https://statcounter.com/" target="_blank"><img class="statcounter"
-    src="https://c.statcounter.com/13087567/0/3a2f1e85/1/" alt="Web Analytics"
+    href="https://statcounter.com/" target="_blank"><img
+    class="statcounter"
+    src="https://c.statcounter.com/13087567/0/3a2f1e85/1/"
+    alt="Web Analytics"
     referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
     <!-- End of Statcounter Code -->
+    <!-- End of Statcounter Code -->
 </body>
-</html> 
+</html>

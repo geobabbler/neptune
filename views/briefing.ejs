@@ -1,50 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GeoFeeds - Spatial News Aggregator</title>
+    <title><%= title %> | GeoFeeds</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=600">
     <link rel="icon" type="image/png" href="/images/geofeeds_logo.png">
     <link rel="stylesheet" href="/styles/main.css">
 </head>
-<body>
+<body class="briefing-page">
     <header class="site-header">
         <img src="/images/geofeeds_header.png" alt="GeoFeeds - Spatial News Aggregator" class="header-image" />
     </header>
     <h1>Geospatial News Aggregator</h1>
     <h4>Add your feed - <a href="https://bsky.app/profile/geobabbler.bsky.social">@geobabbler</a>, <a href="https://bsky.app/profile/jamesfee.bsky.social">@jamesfee</a> or create an <a href="https://github.com/geobabbler/neptune">issue on Github</a>.</h4>
     <h5><a href="/list">List of feeds</a> | <a href="/feed">Raw RSS</a> | <a href="/briefings">Briefings</a></h5>
-    <% items.forEach(function(item) { %>
-        <div class="feed-item">
-            <div class="feed-title">
-                <a href="<%= item.link %>" target="_blank"><%= item.title %></a>
-            </div>
-            <div class="feed-meta">
-                <span class="feed-source"><%= item.source %></span>
-                <% if (item.author) { %>
-                    • <span class="feed-author">By <%= item.author %></span>
-                <% } %>
-                • <time><%= new Date(item.pubDate).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                }) %></time>
-            </div>
-            <% if (item.imageUrl) { %>
-                <div class="feed-image">
-                    <img src="<%= item.imageUrl %>" alt="<%= item.title %>" loading="lazy" />
-                </div>
-            <% } %>
-            <div class="feed-description">
-                <%- item.description %>
-            </div>
+    <div class="feed-item">
+        <div class="feed-description">
+            <%- html %>
         </div>
-    <% }); %>
+    </div>
     <pre>Powered by Neptune</pre>
     <h3>In memory of <a href="https://spatiallyadjusted.com/planetgs/">Planet Geospatial</a>:  2005-2014</h3>
     <h4>Trans rights are human rights.</h4>
 <!-- Default Statcounter code for GeoFeeds https://geofeeds.co -->
-<!-- Default Statcounter code for GeoFeeds
-https://geofeeds.co -->
 <script type="text/javascript">
     var sc_project=13087567; 
     var sc_invisible=1; 
@@ -60,6 +38,5 @@ https://geofeeds.co -->
     alt="Web Analytics"
     referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
     <!-- End of Statcounter Code -->
-    <!-- End of Statcounter Code -->
 </body>
-</html> 
+</html>

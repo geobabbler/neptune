@@ -10,6 +10,7 @@ const schedule = require('node-schedule');
 const ejs = require('ejs');
 const RSS = require('rss');
 const { decode } = require('html-entities');
+const { marked } = require('marked');
 const CONFIG = require('./config');
 const { getFeedMetadata } = require('./lib/opml');
 const { summarizeText, extractFeedItems, extractImageUrl, extractImageFromHtml, isValidImageUrl, resolveImageUrl } = require('./lib/feeds');
@@ -68,6 +69,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Directory for cache and output
 const cacheDir = path.join(__dirname, 'cache');
 const outputDir = path.join(__dirname, 'output');
+const briefingsDir = path.join(__dirname, 'briefings');
 
 // Ensure directories exist
 if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
@@ -476,6 +478,68 @@ app.get('/list', async (req, res) => {
   } catch (error) {
     console.error('Error generating feed list:', error);
     res.status(500).send('Error generating feed list');
+  }
+});
+
+// Briefings list - reads files from briefings folder, extracts document title from first # heading
+const getBriefingsList = async () => {
+  if (!fs.existsSync(briefingsDir)) return [];
+  const files = fs.readdirSync(briefingsDir).filter((f) => f.endsWith('.md'));
+  const briefings = [];
+  for (const file of files) {
+    const filePath = path.join(briefingsDir, file);
+    let title = file;
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const match = content.match(/^#\s+(.+)$/m);
+      if (match) title = match[1].trim();
+    } catch {
+      // fallback to filename without extension
+      title = path.basename(file, '.md');
+    }
+    briefings.push({
+      title,
+      filename: file,
+      url: `/briefings/${encodeURIComponent(file)}`,
+    });
+  }
+  // Sort by title (most recent first if date-based, or alphabetically)
+  briefings.sort((a, b) => b.title.localeCompare(a.title));
+  return briefings;
+};
+
+app.get('/briefings', async (req, res) => {
+  try {
+    const briefings = await getBriefingsList();
+    const html = await ejs.renderFile(
+      path.join(__dirname, 'views', 'briefings.ejs'),
+      { briefings }
+    );
+    res.send(html);
+  } catch (error) {
+    console.error('Error generating briefings list:', error);
+    res.status(500).send('Error generating briefings list');
+  }
+});
+
+app.get('/briefings/:filename', async (req, res) => {
+  const filename = req.params.filename;
+  if (filename.includes('..') || path.isAbsolute(filename)) {
+    return res.status(400).send('Invalid filename');
+  }
+  const filePath = path.join(briefingsDir, filename);
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    return res.status(404).send('Briefing not found');
+  }
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    const titleMatch = content.match(/^#\s+(.+)$/m);
+    const title = titleMatch ? titleMatch[1].trim() : path.basename(filename, '.md');
+    const html = marked.parse(content);
+    res.render('briefing', { title, html });
+  } catch (error) {
+    console.error('Error rendering briefing:', error);
+    res.status(500).send('Error rendering briefing');
   }
 });
 
