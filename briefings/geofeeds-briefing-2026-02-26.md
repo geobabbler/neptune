@@ -1,4 +1,4 @@
-# GeoFeeds Daily Briefing — Wednesday, February 26, 2026
+# GeoFeeds Daily Briefing — Thursday, February 26, 2026
 
 *Covering posts from 0800 ET February 25 to 0800 ET February 26. Sources: 113 geospatial feeds.*
 
