@@ -26,6 +26,26 @@ const getFeedMetadata = async (opmlFile) => {
 // Note: We import from mcp-cache to avoid circular dependency
 const getCachePath = (cacheDir, url) => mcpCache.getCachePath(cacheDir, url);
 
+/**
+ * Parse a date or date/time string for range filtering.
+ * - Date-only (YYYY-MM-DD): dateFrom → start of day UTC, dateTo → end of day UTC
+ * - Date/time (ISO 8601 with T): used as-is
+ */
+const parseDateBoundary = (value, isEndOfRange) => {
+  if (!value || typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  // Date-only: YYYY-MM-DD (optional trailing time/space)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const day = trimmed;
+    if (isEndOfRange) {
+      return new Date(day + 'T23:59:59.999Z');
+    }
+    return new Date(day + 'T00:00:00.000Z');
+  }
+  return new Date(trimmed);
+};
+
 // Helper: Fix common XML issues before parsing
 const sanitizeXml = (xmlString) => {
   let sanitized = xmlString;
@@ -582,10 +602,12 @@ const searchCachedFeeds = async (
         // Filter by date range if specified
         let items = feedInfo.items;
         if (dateFrom || dateTo) {
+          const fromBound = parseDateBoundary(dateFrom, false);
+          const toBound = parseDateBoundary(dateTo, true);
           items = items.filter(item => {
             const itemDate = new Date(item.pubDate);
-            if (dateFrom && itemDate < new Date(dateFrom)) return false;
-            if (dateTo && itemDate > new Date(dateTo)) return false;
+            if (fromBound && itemDate < fromBound) return false;
+            if (toBound && itemDate > toBound) return false;
             return true;
           });
         }
