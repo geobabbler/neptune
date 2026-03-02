@@ -497,14 +497,18 @@ const getBriefingsList = async () => {
       // fallback to filename without extension
       title = path.basename(file, '.md');
     }
+    const dateMatch = file.match(/geofeeds-briefing-(\d{4}-\d{2}-\d{2})\.md$/);
+    const dateStr = dateMatch ? dateMatch[1] : '0000-00-00';
+
     briefings.push({
       title,
       filename: file,
       url: `/briefings/${encodeURIComponent(file)}`,
+      dateStr,
     });
   }
-  // Sort by title (most recent first if date-based, or alphabetically)
-  briefings.sort((a, b) => b.title.localeCompare(a.title));
+  // Sort by date descending (most recent first)
+  briefings.sort((a, b) => b.dateStr.localeCompare(a.dateStr));
   return briefings;
 };
 
