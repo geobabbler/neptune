@@ -1,5 +1,6 @@
-# 🌍 Geofeeds Daily Briefing
-**Wednesday, March 4, 2026**
+# GeoFeeds Daily Briefing — Wednesday, March 4, 2026
+
+*Covering posts from 0800 ET March 3 to 0800 ET March 4. Sources: 118 geospatial feeds.*
 
 ---
 
