@@ -5,7 +5,7 @@ const CONFIG = {
   PORT: parseInt(process.env.PORT || '8080', 10),
 
   // How many months back to keep items when aggregating/searching
-  FEED_MONTHS_BACK: parseInt(process.env.FEED_MONTHS_BACK || '12', 10),
+  FEED_MONTHS_BACK: parseInt(process.env.FEED_MONTHS_BACK || '18', 10),
 
   // Cron expression for aggregation job
   AGGREGATION_CRON: process.env.AGGREGATION_CRON || '*/15 * * * *',
