@@ -135,5 +135,12 @@
     <outline text="The Planet" title="The Planet" description="" type="rss" version="RSS" htmlUrl="https://theplanet.substack.com" xmlUrl="https://theplanet.substack.com/feed"/>
     <outline text="Geospatial Jobs" title="Geospatial Jobs" description="" type="rss" version="RSS" htmlUrl="https://geospatial.substack.com" xmlUrl="https://geospatial.substack.com/feed"/>
     <outline text="TerraWatch Space" title="TerraWatch Space" description="" type="rss" version="RSS" htmlUrl="https://newsletter.terrawatchspace.com" xmlUrl="https://newsletter.terrawatchspace.com/rss/"/>
+    <outline text="MapLibre" title="MapLibre" description="" type="rss" version="RSS" htmlUrl="https://maplibre.org/news" xmlUrl="https://maplibre.org/news/index.xml"/>
+    <outline text="ProtoMaps" title="ProtoMaps" description="" type="rss" version="RSS" htmlUrl="https://protomaps.com/blog" xmlUrl="https://protomaps.com/blog/index.xml"/>
+    <outline text="Kontur" title="Kontur" description="" type="rss" version="RSS" htmlUrl="https://www.kontur.io/category/blog" xmlUrl="https://www.kontur.io/category/blog/feed/"/>
+    <outline text="MapAction" title="MapAction" description="" type="rss" version="RSS" htmlUrl="https://mapaction.org" xmlUrl="https://mapaction.org/feed/"/>
+    <outline text="Missing Maps" title="Missing Maps" description="" type="rss" version="RSS" htmlUrl="https://missingmaps.org" xmlUrl="https://missingmaps.org/feed.xml"/>
+    <outline text="Rene Rubalcava" title="Rene Rubalcava" description="" type="rss" version="RSS" htmlUrl="https://odoe.net" xmlUrl="https://odoe.net/rss.xml"/>
+    <outline text="Final Draft Mapping" title="Final Draft Mapping" description="" type="rss" version="RSS" htmlUrl="https://finaldraftmapping.com" xmlUrl="https://finaldraftmapping.com/feed/"/>
   </body>
 </opml>
