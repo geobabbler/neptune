@@ -125,5 +125,15 @@
     <outline text="Towards Data Science - Geospatial" title="Towards Data Science - Geospatial" description="" type="rss" version="RSS" htmlUrl="https://towardsdatascience.com/tag/geospatial/feed" xmlUrl="https://towardsdatascience.com/tag/geospatial/feed"/>
     <outline text="Ubique (AGS)" title="Ubique (AGS)" description="" type="rss" version="RSS" htmlUrl="https://ubiqueags.org/feed/" xmlUrl="https://ubiqueags.org/feed/"/>
     <outline text="VertiGIS" title="VertiGIS" type="rss" xmlUrl="https://www.vertigis.com/vertigis_blog/feed/"/>
+    <outline text="WeeklyOSM" title="WeeklyOSM" description="" type="rss" version="RSS" htmlUrl="https://weeklyosm.eu" xmlUrl="https://weeklyosm.eu/feed"/>
+    <outline text="Library of Congress Maps Blog" title="Library of Congress Maps Blog" description="" type="rss" version="RSS" htmlUrl="https://blogs.loc.gov/maps/" xmlUrl="https://blogs.loc.gov/maps/feed/"/>
+    <outline text="Transit Maps" title="Transit Maps" description="" type="rss" version="RSS" htmlUrl="http://transitmap.net" xmlUrl="http://transitmap.net/feed/"/>
+    <outline text="Brilliant Maps" title="Brilliant Maps" description="" type="rss" version="RSS" htmlUrl="https://brilliantmaps.com" xmlUrl="https://brilliantmaps.com/feed/"/>
+    <outline text="Google Earth Engine" title="Google Earth Engine" description="" type="rss" version="RSS" htmlUrl="https://medium.com/google-earth" xmlUrl="https://medium.com/feed/google-earth"/>
+    <outline text="OPENGIS.ch" title="OPENGIS.ch" description="" type="rss" version="RSS" htmlUrl="https://www.opengis.ch" xmlUrl="https://www.opengis.ch/feed/"/>
+    <outline text="GeoAI Newsletter" title="GeoAI Newsletter" description="" type="rss" version="RSS" htmlUrl="https://geoai.substack.com" xmlUrl="https://geoai.substack.com/feed"/>
+    <outline text="The Planet" title="The Planet" description="" type="rss" version="RSS" htmlUrl="https://theplanet.substack.com" xmlUrl="https://theplanet.substack.com/feed"/>
+    <outline text="Geospatial Jobs" title="Geospatial Jobs" description="" type="rss" version="RSS" htmlUrl="https://geospatial.substack.com" xmlUrl="https://geospatial.substack.com/feed"/>
+    <outline text="TerraWatch Space" title="TerraWatch Space" description="" type="rss" version="RSS" htmlUrl="https://newsletter.terrawatchspace.com" xmlUrl="https://newsletter.terrawatchspace.com/rss/"/>
   </body>
 </opml>
