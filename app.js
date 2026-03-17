@@ -931,28 +931,42 @@ app.get('/mcp/info', async (req, res) => {
 // ============================================================================
 // Legacy HTTP+SSE Transport (protocol version 2024-11-05)
 // ============================================================================
+const logsDir = path.join(__dirname, 'logs');
+const sseLog = (msg, err = null) => {
+  try {
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+    const date = new Date().toISOString().slice(0, 10);
+    const logPath = path.join(logsDir, `sse_${date}.log`);
+    const ts = new Date().toISOString();
+    const line = err ? `${ts} [SSE] ${msg}\n${err.stack || err}\n` : `${ts} [SSE] ${msg}\n`;
+    fs.appendFileSync(logPath, line, 'utf8');
+  } catch (e) {
+    console.error('[SSE] Failed to write log:', e.message);
+  }
+};
+
 // Store SSE transports by session ID (no authentication required)
 const sseTransports = {};
 
 // GET /sse - establish SSE stream (server -> client)
 app.get('/sse', async (req, res) => {
   const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
-  console.log(`[SSE] GET /sse from ${clientIp}`);
+  sseLog(`GET /sse from ${clientIp}`);
   try {
     const transport = new SSEServerTransport('/messages', res);
     const sessionId = transport.sessionId;
     sseTransports[sessionId] = transport;
 
     transport.onclose = () => {
-      console.log(`[SSE] Transport closed for session ${sessionId}`);
+      sseLog(`Transport closed for session ${sessionId}`);
       delete sseTransports[sessionId];
     };
 
     const server = createNeptuneMcpServer();
     await server.connect(transport);
-    console.log(`[SSE] Established stream for session ${sessionId}`);
+    sseLog(`Established stream for session ${sessionId}`);
   } catch (error) {
-    console.error('[SSE] Error establishing stream:', error);
+    sseLog('Error establishing stream:', error);
     if (!res.headersSent) {
       res.status(500).send('Error establishing SSE stream');
     }
@@ -962,19 +976,22 @@ app.get('/sse', async (req, res) => {
 // POST /messages - receive client JSON-RPC messages (client -> server)
 app.post('/messages', async (req, res) => {
   const sessionId = req.query.sessionId;
+  const method = req.body?.method ?? 'unknown';
+  sseLog(`POST /messages session=${sessionId} method=${method}`);
   if (!sessionId) {
     res.status(400).send('Missing sessionId parameter');
     return;
   }
   const transport = sseTransports[sessionId];
   if (!transport) {
+    sseLog(`Session not found: ${sessionId}`);
     res.status(404).send('Session not found');
     return;
   }
   try {
     await transport.handlePostMessage(req, res, req.body);
   } catch (error) {
-    console.error('[SSE] Error handling POST:', error);
+    sseLog('Error handling POST:', error);
     if (!res.headersSent) {
       res.status(500).send('Error handling request');
     }
