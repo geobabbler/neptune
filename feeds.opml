@@ -142,5 +142,6 @@
     <outline text="Missing Maps" title="Missing Maps" description="" type="rss" version="RSS" htmlUrl="https://missingmaps.org" xmlUrl="https://missingmaps.org/feed.xml"/>
     <outline text="Rene Rubalcava" title="Rene Rubalcava" description="" type="rss" version="RSS" htmlUrl="https://odoe.net" xmlUrl="https://odoe.net/rss.xml"/>
     <outline text="Final Draft Mapping" title="Final Draft Mapping" description="" type="rss" version="RSS" htmlUrl="https://finaldraftmapping.com" xmlUrl="https://finaldraftmapping.com/feed/"/>
+    <outline text="Public Environmental Data Partners" title="Public Environmental Data Partners" description="" type="rss" version="RSS" htmlUrl="https://screening-tools.com/blog" xmlUrl="https://screening-tools.com/blog?format=rss" defaultImageUrl="https://images.squarespace-cdn.com/content/v1/6793060d1570ff20aceb1125/34fc6928-7459-49bf-a903-7da052287ba0/mark_tools.png?format=1500w"/>
   </body>
 </opml>
