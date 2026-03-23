@@ -146,5 +146,6 @@
     <outline text="Latest vGIS News and Blogs" title="Latest vGIS News and Blogs" description="" type="rss" version="RSS" htmlUrl="https://www.vgis.io/ar-mr-vr-gis-vgis-team-blog-news-industry/" xmlUrl="https://www.vgis.io/ar-mr-vr-gis-vgis-team-blog-news-industry/feed/"/>
     <outline text="CARTO Blog | Posts" title="CARTO Blog | Posts" description="" type="rss" version="RSS" htmlUrl="https://carto.com/blog/" xmlUrl="https://carto.com/blog/rss.xml"/>
     <outline text="Earth Observation News" title="Earth Observation News" description="" type="rss" version="RSS" htmlUrl="https://remote-sensing.org/" xmlUrl="https://remote-sensing.org/feed/"/>
+    <outline text="GeoAlert" title="GeoAlert" description="" type="rss" version="RSS" htmlUrl="https://geoalert.io" xmlUrl="https://medium.com/feed/@geoalert"/>
   </body>
 </opml>
