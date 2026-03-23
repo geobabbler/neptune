@@ -147,5 +147,6 @@
     <outline text="CARTO Blog | Posts" title="CARTO Blog | Posts" description="" type="rss" version="RSS" htmlUrl="https://carto.com/blog/" xmlUrl="https://carto.com/blog/rss.xml"/>
     <outline text="Earth Observation News" title="Earth Observation News" description="" type="rss" version="RSS" htmlUrl="https://remote-sensing.org/" xmlUrl="https://remote-sensing.org/feed/"/>
     <outline text="GeoAlert" title="GeoAlert" description="" type="rss" version="RSS" htmlUrl="https://geoalert.io" xmlUrl="https://medium.com/feed/@geoalert"/>
+    <outline text="GISuser" title="GISuser" description="" type="rss" version="RSS" htmlUrl="https://gisuser.com" xmlUrl="https://gisuser.com/feed/"/>
   </body>
 </opml>
