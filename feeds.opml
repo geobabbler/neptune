@@ -150,7 +150,12 @@
     <outline type="rss" text="Felt Blog" title="Felt Blog" xmlUrl="https://felt.com/blog/rss.xml" htmlUrl="https://felt.com/blog"/>
     <outline type="rss" text="GeoSpatial ML" title="GeoSpatial ML" xmlUrl="https://geospatialml.com/index.xml" htmlUrl="https://geospatialml.com"/>
     <outline type="rss" text="Mapbox" title="Mapbox" xmlUrl="https://medium.com/feed/@Mapbox" htmlUrl="https://medium.com/@Mapbox"/>
-    <outline type="rss" text="Alasdair Rae" title="Alasdair Rae" xmlUrl="https://alasdair.substack.com/feed" htmlUrl="https://alasdair.substack.com"/>
+    <outline type="rss" text="Alasdair Rae" title="Alasdair Rae" xmlUrl="https://earthstuff.substack.com/feed" htmlUrl="https://earthstuff.substack.com"/>
     <outline type="rss" text="Ed Parsons" title="Ed Parsons" xmlUrl="https://edparsons.com/rss/" htmlUrl="https://edparsons.com"/>
+    <outline text="Open-Source Solutions for Geospatial Analysis" title="Open-Source Solutions for Geospatial Analysis" description="" type="rss" version="RSS" htmlUrl="https://bonnypmcclain.substack.com" xmlUrl="https://bonnypmcclain.substack.com/feed"/>
+    <outline text="GeoWeek News" title="GeoWeek News" description="" type="rss" version="RSS" htmlUrl="https://www.geoweeknews.com" xmlUrl="https://www.geoweeknews.com/feed.xml"/>
+    <outline text="GIS on Medium" title="GIS on Medium" description="" type="rss" version="RSS" htmlUrl="https://medium.com/tag/gis" xmlUrl="https://medium.com/feed/tag/gis"/>
+    <outline text="Remote Sensing on Medium" title="Remote Sensing on Medium" description="" type="rss" version="RSS" htmlUrl="https://medium.com/tag/remote-sensing" xmlUrl="https://medium.com/feed/tag/remote-sensing"/>
+    <outline text="Earth Observation on Medium" title="Earth Observation on Medium" description="" type="rss" version="RSS" htmlUrl="https://medium.com/tag/earth-observation" xmlUrl="https://medium.com/feed/tag/earth-observation"/>
   </body>
 </opml>
