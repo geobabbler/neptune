@@ -147,7 +147,7 @@
     <outline text="CARTO Blog | Posts" title="CARTO Blog | Posts" description="" type="rss" version="RSS" htmlUrl="https://carto.com/blog/" xmlUrl="https://carto.com/blog/rss.xml"/>
     <outline text="Earth Observation News" title="Earth Observation News" description="" type="rss" version="RSS" htmlUrl="https://remote-sensing.org/" xmlUrl="https://remote-sensing.org/feed/"/>
     <outline text="GeoAlert" title="GeoAlert" description="" type="rss" version="RSS" htmlUrl="https://geoalert.io" xmlUrl="https://medium.com/feed/@geoalert"/>
-    <outline type="rss" text="Felt Blog" title="Felt Blog" xmlUrl="https://felt.com/blog/rss.xml" htmlUrl="https://felt.com/blog"/>
+    <!--<outline type="rss" text="Felt Blog" title="Felt Blog" xmlUrl="https://felt.com/blog/rss.xml" htmlUrl="https://felt.com/blog"/> -->
     <outline type="rss" text="GeoSpatial ML" title="GeoSpatial ML" xmlUrl="https://geospatialml.com/index.xml" htmlUrl="https://geospatialml.com"/>
     <outline type="rss" text="Mapbox" title="Mapbox" xmlUrl="https://medium.com/feed/@Mapbox" htmlUrl="https://medium.com/@Mapbox"/>
     <outline type="rss" text="Alasdair Rae" title="Alasdair Rae" xmlUrl="https://earthstuff.substack.com/feed" htmlUrl="https://earthstuff.substack.com"/>
