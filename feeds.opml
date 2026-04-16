@@ -159,5 +159,6 @@
     <outline text="Earth Observation on Medium" title="Earth Observation on Medium" description="" type="rss" version="RSS" htmlUrl="https://medium.com/tag/earth-observation" xmlUrl="https://medium.com/feed/tag/earth-observation"/>
     <outline text="EarthDaily Blog" title="EarthDaily Blog" description="" type="rss" version="RSS" htmlUrl="https://earthdaily.com/blog" xmlUrl="https://earthdaily.com/blog/rss.xml"/>
     <outline text="ICEYE Blog" title="ICEYE Blog" description="" type="rss" version="RSS" htmlUrl="https://www.iceye.com/blog" xmlUrl="https://www.iceye.com/blog/rss.xml"/>
+    <outline text="Sam Woodcock" title="Sam Woodcock" description="" type="rss" version="RSS" htmlUrl="https://spwoodcock.dev" xmlUrl="https://spwoodcock.dev/feed.xml"/>
   </body>
 </opml>
