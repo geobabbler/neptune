@@ -20,6 +20,15 @@ const CONFIG = {
 
   // HTTP client timeout (ms) for fetching feeds
   FEED_HTTP_TIMEOUT_MS: parseInt(process.env.FEED_HTTP_TIMEOUT_MS || '10000', 10),
+
+  // If-None-Match / If-Modified-Since when validators are known (set FEED_FETCH_FORCE_FULL=1 to skip)
+  FEED_CONDITIONAL_GET: process.env.FEED_FETCH_FORCE_FULL === '1' ? false : process.env.FEED_CONDITIONAL_GET !== '0',
+
+  // Merge new snapshot with prior item cache within FEED_MONTHS_BACK (set FEED_MERGE_ITEMS=0 to disable)
+  FEED_MERGE_ITEMS: process.env.FEED_MERGE_ITEMS !== '0',
+
+  // Cap merged item list per feed (after date prune)
+  FEED_MAX_MERGED_ITEMS: parseInt(process.env.FEED_MAX_MERGED_ITEMS || '2000', 10),
 };
 
 module.exports = CONFIG;

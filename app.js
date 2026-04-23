@@ -1,6 +1,6 @@
 const express = require('express');
 const https = require('https');
-const axios = require('axios');
+const { randomUUID } = require('crypto');
 const xml2js = require('xml2js');
 const fs = require('fs');
 const path = require('path');
@@ -14,6 +14,7 @@ const { marked } = require('marked');
 const CONFIG = require('./config');
 const { getFeedMetadata } = require('./lib/opml');
 const { summarizeText, extractFeedItems, extractImageUrl, extractImageFromHtml, isValidImageUrl, resolveImageUrl } = require('./lib/feeds');
+const { fetchAndCacheFeed } = require('./lib/feed-fetch');
 
 // MCP Server imports
 const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
@@ -22,6 +23,7 @@ const { SSEServerTransport } = require('@modelcontextprotocol/sdk/server/sse.js'
 const {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  isInitializeRequest,
 } = require('@modelcontextprotocol/sdk/types.js');
 const mcpHelpers = require('./mcp-helpers.js');
 const mcpCache = require('./lib/mcp-cache');
@@ -74,31 +76,6 @@ const briefingsDir = path.join(__dirname, 'briefings');
 // Ensure directories exist
 if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
-
-// Utility function to fetch and cache feeds
-//'Neptune Feed Aggregator/1.0'
-const fetchAndCacheFeed = async (url, cachePath) => {
-  try {
-    const response = await axios.get(url, {
-      timeout: CONFIG.FEED_HTTP_TIMEOUT_MS,
-      headers: {
-        'User-Agent': CONFIG.USER_AGENT,
-        'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*',
-      },
-      maxRedirects: 5,
-    });
-    fs.writeFileSync(cachePath, response.data.replace('xmlns:media=&quot;http://search.yahoo.com/mrss/&quot;', 'xmlns:media="http://search.yahoo.com/mrss/"'), 'utf8');
-    return response.data.replace('xmlns:media=&quot;http://search.yahoo.com/mrss/&quot;', 'xmlns:media="http://search.yahoo.com/mrss/"');
-  } catch (error) {
-    console.error(`Error fetching feed from ${url}:`, error.message);
-    // If cache exists, return cached data as fallback
-    if (fs.existsSync(cachePath)) {
-      console.log(`Using cached data for ${url}`);
-      return fs.readFileSync(cachePath, 'utf8');
-    }
-    return null;
-  }
-};
 
 // Minimal content filtering (strip HTML tags from titles)
 const filterFeedContent = (feedXml) => {
@@ -273,7 +250,9 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
           if (useCache && fs.existsSync(cachePath)) {
             feedData = fs.readFileSync(cachePath, 'utf8');
           } else {
-            feedData = await fetchAndCacheFeed(url, cachePath);
+            feedData = await fetchAndCacheFeed(url, cachePath, cacheDir, {
+              skipConditional: process.env.FEED_FETCH_FORCE_FULL === '1',
+            });
           }
 
           if (feedData) {
@@ -296,26 +275,29 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
                   }));
                 }
 
-                // Write MCP cache files (metadata index and item cache)
-                // This is isolated to MCP - aggregation workflow is unaffected
+                // Write MCP cache files (metadata index and item cache; may merge with prior cache)
                 try {
-                  mcpCache.writeItemCache(cacheDir, url, feedInfo);
-                  
-                  // Track metadata for index
+                  const mergedForAgg =
+                    mcpCache.writeItemCache(cacheDir, url, feedInfo, {
+                      monthsBack: CONFIG.FEED_MONTHS_BACK,
+                      maxMergedItems: CONFIG.FEED_MAX_MERGED_ITEMS,
+                    }) ?? feedInfo;
+
                   feedMetadataForIndex.push({
                     url,
                     title: feedTitle,
-                    itemCount: feedInfo.items.length,
+                    itemCount: mergedForAgg.items.length,
                     lastUpdated: fs.existsSync(cachePath)
                       ? fs.statSync(cachePath).mtime.toISOString()
                       : new Date().toISOString(),
                   });
+
+                  aggregatedFeeds.push(mergedForAgg);
                 } catch (cacheError) {
                   // Non-fatal - log but don't fail aggregation
                   console.warn(`Warning: Failed to write MCP cache for ${feedTitle}:`, cacheError.message);
+                  aggregatedFeeds.push(feedInfo);
                 }
-
-                aggregatedFeeds.push(feedInfo);
                 console.log(`✓ Processed ${feedTitle}: ${feedInfo.items.length} items`);
               } else if (feedInfo && feedInfo.items.length === 0) {
                 console.log(
@@ -820,21 +802,8 @@ Examples:
   return server;
 }
 
-// Initialize MCP server for Streamable HTTP
-const mcpServer = createNeptuneMcpServer();
-
-// Initialize Streamable HTTP Transport
-// Using stateless mode (no sessionIdGenerator) for serverless compatibility
-const mcpTransport = new StreamableHTTPServerTransport({
-  sessionIdGenerator: undefined, // Stateless mode - no session management needed
-});
-
-// Connect the MCP server to the transport
-mcpServer.connect(mcpTransport).then(() => {
-  console.log('MCP server connected to Streamable HTTP transport');
-}).catch((error) => {
-  console.error('Error connecting MCP server to transport:', error);
-});
+// Streamable HTTP MCP: one transport + server instance per session (SDK requirement).
+const mcpStreamableTransports = {};
 
 // Unified MCP endpoint - handles both GET and POST requests
 // Streamable HTTP uses a single endpoint for all communication
@@ -858,6 +827,56 @@ app.all('/mcp', async (req, res) => {
       console.error(`[${timestamp}] ${req.method} /mcp | IP: ${clientIp} | Body undefined - check Content-Type and body size limit`);
       if (!res.headersSent) res.status(400).json({ error: 'Request body required. Ensure Content-Type: application/json and body is within size limit.' });
       return;
+    }
+
+    const rawSessionId = req.headers['mcp-session-id'];
+    const mcpSessionId = Array.isArray(rawSessionId) ? rawSessionId[0] : rawSessionId;
+    let transport = mcpSessionId ? mcpStreamableTransports[mcpSessionId] : undefined;
+
+    if (transport && !(transport instanceof StreamableHTTPServerTransport)) {
+      if (!res.headersSent) {
+        res.status(400).json({
+          jsonrpc: '2.0',
+          error: {
+            code: -32000,
+            message: 'Bad Request: Session exists but uses a different transport protocol',
+          },
+          id: req.body?.id ?? null,
+        });
+      }
+      return;
+    }
+
+    if (!transport) {
+      if (req.method === 'POST' && req.body && isInitializeRequest(req.body)) {
+        transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => randomUUID(),
+          onsessioninitialized: (sid) => {
+            mcpStreamableTransports[sid] = transport;
+          },
+        });
+        transport.onclose = () => {
+          const sid = transport.sessionId;
+          if (sid && mcpStreamableTransports[sid]) {
+            delete mcpStreamableTransports[sid];
+          }
+        };
+        const server = createNeptuneMcpServer();
+        await server.connect(transport);
+      } else {
+        if (!res.headersSent) {
+          res.status(400).json({
+            jsonrpc: '2.0',
+            error: {
+              code: -32000,
+              message:
+                'Bad Request: No valid MCP session. POST initialize (JSON-RPC) first, then send mcp-session-id on subsequent requests.',
+            },
+            id: req.body?.id ?? null,
+          });
+        }
+        return;
+      }
     }
 
     // Extract MCP request info from body (if JSON-RPC)
@@ -901,9 +920,11 @@ app.all('/mcp', async (req, res) => {
       console.log(logParts.join(' | '));
     });
 
-    // Use the transport's handleRequest method
-    // It automatically handles GET (for SSE stream) and POST (for JSON-RPC messages)
-    await mcpTransport.handleRequest(req, res, req.body);
+    if (req.method === 'POST') {
+      await transport.handleRequest(req, res, req.body);
+    } else {
+      await transport.handleRequest(req, res);
+    }
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error(`[${timestamp}] ${req.method} /mcp | IP: ${clientIp} | ERROR: ${error.message} | Time: ${duration}ms`);

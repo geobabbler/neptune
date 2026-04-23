@@ -8,6 +8,7 @@
         "start:https": "node app.js --https",
         "go": "node app.js",
         "go:https": "node app.js --https",
+        "test": "node --test test/differential-refresh.test.js",
         "test:random-feeds": "node app.js --random-feeds=10",
         "generate-cert": "node generate-cert.js"
     },
