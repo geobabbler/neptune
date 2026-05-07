@@ -952,17 +952,12 @@ app.get('/mcp/info', async (req, res) => {
 // ============================================================================
 // Legacy HTTP+SSE Transport (protocol version 2024-11-05)
 // ============================================================================
-const logsDir = path.join(__dirname, 'logs');
 const sseLog = (msg, err = null) => {
-  try {
-    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
-    const date = new Date().toISOString().slice(0, 10);
-    const logPath = path.join(logsDir, `sse_${date}.log`);
-    const ts = new Date().toISOString();
-    const line = err ? `${ts} [SSE] ${msg}\n${err.stack || err}\n` : `${ts} [SSE] ${msg}\n`;
-    fs.appendFileSync(logPath, line, 'utf8');
-  } catch (e) {
-    console.error('[SSE] Failed to write log:', e.message);
+  const ts = new Date().toISOString();
+  if (err) {
+    console.log(`${ts} [SSE] ${msg}\n${err.stack || err}`);
+  } else {
+    console.log(`${ts} [SSE] ${msg}`);
   }
 };
 
