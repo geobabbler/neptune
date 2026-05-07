@@ -24,10 +24,13 @@
     <outline text="Digital Urban" title="Digital Urban" description="" type="rss" version="RSS" htmlUrl="https://digitalurban.org" xmlUrl="https://www.digitalurban.org/feed/" />
     <outline text="Earth Imaging Journal" title="Earth Imaging Journal" description="" type="rss" version="RSS" htmlUrl="https://feeds.feedburner.com/EIJournal" xmlUrl="https://feeds.feedburner.com/EIJournal"/>
     <outline text="Esri" title="Esri" type="rss" xmlUrl="https://www.esri.com/arcgis-blog/feed/?post_type=blog" defaultImageUrl="https://www.esri.com/content/dam/esrisites/en-us/about/about/about-2022/assets/about-company-st-jack-bg.jpg"/>
+    <outline text="Esri UK Resources" title="Esri UK Resources" description="" type="rss" version="RSS" htmlUrl="https://resource.esriuk.com/" xmlUrl="https://resource.esriuk.com/feed"/>
+    <outline text="FME Blog" title="Safe Software FME Blog" description="" type="rss" version="RSS" htmlUrl="https://fme.safe.com/blog/" xmlUrl="https://fme.safe.com/blog/feed/"/>
     <outline text="Foursquare" title="Foursquare" description="" type="rss" version="RSS" htmlUrl="https://foursquare.com/resources/#blog" xmlUrl="https://foursquare.com/feed/" defaultImageUrl="https://upload.wikimedia.org/wikipedia/commons/f/f8/FOURSQUARE_text_logo_2021.svg"/>
     <outline text="FOSS4G North America" title="FOSS4G North America" description="" type="rss" version="RSS" htmlUrl="https://www.foss4gna.org/news-2026/" xmlUrl="https://www.foss4gna.org/news-2026?format=rss"/>
     <outline text="Free and Open Source GIS Ramblings" title="Free and Open Source GIS Ramblings" description="Anita Graser's blog about free and open source GIS software" type="rss" version="RSS" htmlUrl="https://anitagraser.com/" xmlUrl="http://anitagraser.com/feed/"/>
     <outline text="Fulcrum" title="Fulcrum" description="" type="rss" version="RSS" htmlUrl="https://www.fulcrumapp.com" xmlUrl="https://www.fulcrumapp.com/feed"/>
+    <outline text="GDS Geospatial" title="Government Digital Service – Geospatial" description="" type="rss" version="RSS" htmlUrl="https://gdsgeospatial.blog.gov.uk/" xmlUrl="https://gdsgeospatial.blog.gov.uk/feed/"/>
     <outline text="gadom.ski" title="gadom.ski" description="" type="rss" version="RSS" htmlUrl="https://www.gadom.ski" xmlUrl="https://www.gadom.ski/atom.xml"/>
     <outline text="Gartrell Group" title="Gartrell Group" description="" type="rss" version="RSS" htmlUrl="https://gartrellgroup.com/blog" xmlUrl="https://www.gartrellgroup.com/blog?format=rss" defaultImageUrl="https://images.squarespace-cdn.com/content/v1/66bb79d801e54c5b9df45115/9b49afbe-ebbe-42fc-b42d-11daf96e14fd/gartrell-logo-RGB-horizontal-two-color-for-light-backgrounds.png?format=500w" />
     <outline text="Geo Jobe" title="Geo Jobe" description="" type="rss" version="RSS" htmlUrl="https://geo-jobe.com" xmlUrl="https://geo-jobe.com/feed/" defaultImageUrl="https://geo-jobe.com/wp-content/uploads/2025/06/GEO-Jobe-Logo-Primary.png"/>
@@ -56,6 +59,7 @@
     <outline text="GIS Hub" title="GIS Hub" description="" type="rss" version="RSS" htmlUrl="https://blog.gishub.org/" xmlUrl="https://blog.gishub.org/rss.xml"/>
     <outline text="GIS Jobs" title="GIS Jobs" description="" type="rss" version="RSS" htmlUrl="https://www.gisjobs.com/rssjobs.php" xmlUrl="https://www.gisjobs.com/rssjobs.php" defaultImageUrl="https://www.gisjobs.com/images/headerlogo1.png"/>
     <outline text="GoGeomatics" title="GoGeomatics" description="" type="rss" version="RSS" htmlUrl="https://gogeomatics.ca/" xmlUrl="https://gogeomatics.ca/feed/" defaultImageUrl="https://gogeomatics.ca/wp-content/uploads/Gogeomatics-logo-1.png" />
+    <outline text="GPS World" title="GPS World" description="" type="rss" version="RSS" htmlUrl="https://www.gpsworld.com/" xmlUrl="https://www.gpsworld.com/feed/"/>
     <outline text="GrindGIS" title="GrindGIS" description="" type="rss" version="RSS" htmlUrl="https://grindgis.com" xmlUrl="https://grindgis.com/?feed=rss2"/>
     <outline text="IQGeo" title="IQGeo" type="rss" version="RSS" htmlUrl="https://www.iqgeo.com/blog" xmlUrl="https://www.iqgeo.com/blog/rss.xml" defaultImageUrl="https://www.iqgeo.com/hubfs/Logos/IQGeo%202024/IQGeo_Logo_w_tag_2024_on_white.svg"/>
     <outline text="Justin Cole's Blog" title="Justin Cole's Blog" description="" type="rss" version="RSS" htmlUrl="https://justincolegis.com" xmlUrl="https://justincolegis.com/feed/"/>
@@ -127,10 +131,12 @@
     <outline text="Ubique (AGS)" title="Ubique (AGS)" description="" type="rss" version="RSS" htmlUrl="https://ubiqueags.org/feed/" xmlUrl="https://ubiqueags.org/feed/"/>
     <outline text="VertiGIS" title="VertiGIS" type="rss" xmlUrl="https://www.vertigis.com/vertigis_blog/feed/"/>
     <outline text="WeeklyOSM" title="WeeklyOSM" description="" type="rss" version="RSS" htmlUrl="https://weeklyosm.eu" xmlUrl="https://weeklyosm.eu/feed"/>
+    <outline text="xyHt" title="xyHt" description="" type="rss" version="RSS" htmlUrl="https://xyht.com/" xmlUrl="https://xyht.com/feed/"/>
     <outline text="Library of Congress Maps Blog" title="Library of Congress Maps Blog" description="" type="rss" version="RSS" htmlUrl="https://blogs.loc.gov/maps/" xmlUrl="https://blogs.loc.gov/maps/feed/"/>
     <outline text="Transit Maps" title="Transit Maps" description="" type="rss" version="RSS" htmlUrl="http://transitmap.net" xmlUrl="http://transitmap.net/feed/"/>
     <outline text="Brilliant Maps" title="Brilliant Maps" description="" type="rss" version="RSS" htmlUrl="https://brilliantmaps.com" xmlUrl="https://brilliantmaps.com/feed/"/>
     <outline text="Google Earth Engine" title="Google Earth Engine" description="" type="rss" version="RSS" htmlUrl="https://medium.com/google-earth" xmlUrl="https://medium.com/feed/google-earth"/>
+    <outline text="Google Maps Blog" title="Google Maps Blog" description="" type="rss" version="RSS" htmlUrl="https://blog.google/products-and-platforms/products/maps/" xmlUrl="https://blog.google/products-and-platforms/products/maps/rss"/>
     <outline text="OPENGIS.ch" title="OPENGIS.ch" description="" type="rss" version="RSS" htmlUrl="https://www.opengis.ch" xmlUrl="https://www.opengis.ch/feed/"/>
     <outline text="GeoAI Newsletter" title="GeoAI Newsletter" description="" type="rss" version="RSS" htmlUrl="https://geoai.substack.com" xmlUrl="https://geoai.substack.com/feed"/>
     <outline text="The Planet" title="The Planet" description="" type="rss" version="RSS" htmlUrl="https://theplanet.substack.com" xmlUrl="https://theplanet.substack.com/feed"/>
