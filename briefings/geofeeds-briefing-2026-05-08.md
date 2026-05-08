@@ -1,4 +1,4 @@
-# GeoFeeds Daily Briefing
+# GeoFeeds Daily Briefing — Friday, May 8, 2026
 **Friday, May 8, 2026 — 0800 EDT**
 *Monitoring 160 feeds across the geospatial ecosystem*
 *Coverage window: 0800 EDT May 7 → 0800 EDT May 8 (1200–1200 UTC)*
