@@ -704,6 +704,7 @@ app.all('/mcp', async (req, res) => {
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, DELETE');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, MCP-Protocol-Version');
       res.status(200).end();
+      //console.log(`[${timestamp}] ${req.method} /mcp | IP: ${clientIp} | CORS preflight`);
       return;
     }
 
