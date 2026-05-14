@@ -495,6 +495,20 @@ const getBriefingsList = async () => {
   return briefings;
 };
 
+/** Plain-ish excerpt after first # heading for RSS &lt;description&gt; */
+const briefingMarkdownExcerpt = (markdown, maxLen = 500) => {
+  if (!markdown || typeof markdown !== 'string') return '';
+  const withoutH1 = markdown.replace(/^#\s+.+(?:\r?\n|$)/m, '').trim();
+  const block = withoutH1.split(/\n\s*\n/).find((b) => b.trim()) || '';
+  let text = block
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^[-*+]\s+.+/gm, '')
+    .replace(/^#+\s+.+/gm, '');
+  return summarizeText(text.trim(), maxLen);
+};
+
 app.get('/briefings', async (req, res) => {
   try {
     const briefings = await getBriefingsList();
@@ -506,6 +520,66 @@ app.get('/briefings', async (req, res) => {
   } catch (error) {
     console.error('Error generating briefings list:', error);
     res.status(500).send('Error generating briefings list');
+  }
+});
+
+app.get('/briefings/feed', async (req, res) => {
+  try {
+    const briefings = await getBriefingsList();
+    const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'http').split(',')[0].trim();
+    const host = req.get('host') || `localhost:${CONFIG.PORT}`;
+    const baseUrl = `${proto}://${host}`.replace(/\/$/, '');
+
+    const channel = {
+      title: 'GeoFeeds Briefings',
+      description:
+        'Neptune-generated GeoFeeds briefings archived as markdown.',
+      link: `${baseUrl}/briefings`,
+      selfLink: `${baseUrl}/briefings/feed`,
+      lastBuildDate: new Date().toUTCString(),
+    };
+
+    const items = briefings.map((b) => {
+      const filePath = path.join(briefingsDir, b.filename);
+      let excerpt = '';
+      try {
+        excerpt = briefingMarkdownExcerpt(fs.readFileSync(filePath, 'utf8'));
+      } catch {
+        excerpt = '';
+      }
+      if (!excerpt) {
+        excerpt = `Briefing: ${b.title}`;
+      }
+
+      let pubDate;
+      if (b.dateStr && b.dateStr !== '0000-00-00') {
+        pubDate = new Date(`${b.dateStr}T12:00:00.000Z`);
+      } else {
+        try {
+          pubDate = fs.statSync(filePath).mtime;
+        } catch {
+          pubDate = new Date();
+        }
+      }
+
+      return {
+        title: b.title,
+        link: `${baseUrl}${b.url}`,
+        description: excerpt,
+        pubDate,
+      };
+    });
+
+    const xml = await ejs.renderFile(
+      path.join(__dirname, 'views', 'briefings-rss.ejs'),
+      { channel, items },
+      { async: true },
+    );
+    res.set('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.send(xml);
+  } catch (error) {
+    console.error('Error generating briefings RSS:', error);
+    res.status(500).send('Error generating briefings feed');
   }
 });
 
