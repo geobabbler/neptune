@@ -495,18 +495,21 @@ const getBriefingsList = async () => {
   return briefings;
 };
 
-/** Plain-ish excerpt after first # heading for RSS &lt;description&gt; */
-const briefingMarkdownExcerpt = (markdown, maxLen = 500) => {
+/**
+ * Plain text from markdown rendered like GET /briefings/:filename — first maxLen
+ * chars of the concatenated textual content of marked.parse output (word-truncated).
+ */
+const briefingPlainFromRenderedHtml = (markdown, maxLen = 1000) => {
   if (!markdown || typeof markdown !== 'string') return '';
-  const withoutH1 = markdown.replace(/^#\s+.+(?:\r?\n|$)/m, '').trim();
-  const block = withoutH1.split(/\n\s*\n/).find((b) => b.trim()) || '';
-  let text = block
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/^[-*+]\s+.+/gm, '')
-    .replace(/^#+\s+.+/gm, '');
-  return summarizeText(text.trim(), maxLen);
+  try {
+    const fragment = marked.parse(markdown);
+    const $ = cheerio.load(`<div id="rss-brief-root">${fragment}</div>`, null, false);
+    const rawText = $('#rss-brief-root').text() || '';
+    const text = rawText.replace(/\s+/g, ' ').trim();
+    return summarizeText(text, maxLen);
+  } catch {
+    return '';
+  }
 };
 
 app.get('/briefings', async (req, res) => {
@@ -541,14 +544,16 @@ app.get('/briefings/feed', async (req, res) => {
 
     const items = briefings.map((b) => {
       const filePath = path.join(briefingsDir, b.filename);
-      let excerpt = '';
+      let raw = '';
       try {
-        excerpt = briefingMarkdownExcerpt(fs.readFileSync(filePath, 'utf8'));
+        raw = fs.readFileSync(filePath, 'utf8');
       } catch {
-        excerpt = '';
+        raw = '';
       }
-      if (!excerpt) {
-        excerpt = `Briefing: ${b.title}`;
+
+      let description = raw ? briefingPlainFromRenderedHtml(raw, 1000) : '';
+      if (!description) {
+        description = `Briefing: ${b.title}`;
       }
 
       let pubDate;
@@ -565,7 +570,7 @@ app.get('/briefings/feed', async (req, res) => {
       return {
         title: b.title,
         link: `${baseUrl}${b.url}`,
-        description: excerpt,
+        description,
         pubDate,
       };
     });
