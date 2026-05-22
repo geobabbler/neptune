@@ -1,4 +1,4 @@
-# GeoFeeds Daily Briefing — Wednesday, May 20, 2026
+# GeoFeeds Daily Briefing — Thursday, May 21, 2026
 
 *Covering posts from 0800 ET Wednesday, May 20 to 0800 ET Thursday, May 21, 2026. Sources: 161 geospatial feeds.*
 
