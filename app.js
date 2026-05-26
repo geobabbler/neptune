@@ -350,6 +350,49 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
 
 // (Summarization and feed extraction helpers are now centralized in lib/feeds)
 
+/** Encode path segments so URL attributes satisfy strict RSS/XML validators (no raw non-ASCII in path). */
+function toAsciiRssUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  try {
+    const u = new URL(url.trim());
+    const encodedPath = u.pathname
+      .split('/')
+      .map((seg) => {
+        if (!seg) return '';
+        try {
+          return encodeURIComponent(decodeURIComponent(seg.replace(/\+/g, '%20')));
+        } catch {
+          return encodeURIComponent(seg);
+        }
+      })
+      .join('/');
+    const search = u.search || '';
+    const hash = u.hash || '';
+    return `${u.protocol}//${u.host}${encodedPath}${search}${hash}`;
+  } catch {
+    try {
+      return encodeURI(url.trim());
+    } catch {
+      return '';
+    }
+  }
+}
+
+function escapeForRssCDATA(s) {
+  // Prevent `]]>` from terminating the CDATA section (must not appear as a literal triple in one CDATA).
+  return String(s || '').replace(/\]\]>/g, ']\u2060]\u2060>');
+}
+
+/** Wrap snippet so validators do not treat leading "--" etc. as a malformed HTML fragment root. */
+function prepareRssDescription(html) {
+  const inner = escapeForRssCDATA(html || '');
+  return `<div xmlns="http://www.w3.org/1999/xhtml">${inner}</div>`;
+}
+
+function prepareRssTitle(source, title) {
+  return escapeForRssCDATA(`${source || ''} - ${title || ''}`);
+}
+
 // Generate aggregated RSS feed
 const generateRSSFeed = async (feeds) => {
   // Flatten all items and remove duplicates based on link
@@ -365,10 +408,26 @@ const generateRSSFeed = async (feeds) => {
     return dateB - dateA;
   });
 
+  const rssItems = uniqueItems.map((item) => {
+    const linkEnc = item.link ? toAsciiRssUrl(item.link) : '';
+    const imgEnc =
+      item.imageUrl && typeof item.imageUrl === 'string' ? toAsciiRssUrl(item.imageUrl) : '';
+    return {
+      ...item,
+      rssTitle: prepareRssTitle(item.source, item.title),
+      rssDescription: prepareRssDescription(item.description),
+      rssLink: linkEnc || item.link,
+      rssImageUrl: imgEnc || null,
+    };
+  });
+
   // Generate RSS using EJS template
   return await ejs.renderFile(
     path.join(__dirname, 'views', 'rss.ejs'),
-    { items: uniqueItems }
+    {
+      items: rssItems,
+      feedBaseUrl: CONFIG.PUBLIC_SITE_URL,
+    }
   );
 };
 

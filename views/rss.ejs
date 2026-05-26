@@ -3,15 +3,15 @@
     <channel>
         <title>GeoFeeds Powered by Neptune</title>
         <description>Aggregated feed of GIS-related content</description>
-        <link>https://geofeeds.me</link>
-        <atom:link href="http://geofeeds.me/feed" rel="self" type="application/rss+xml"/>
+        <link><%= feedBaseUrl %></link>
+        <atom:link href="<%= feedBaseUrl %>/feed" rel="self" type="application/rss+xml"/>
         <lastBuildDate><%= new Date().toUTCString() %></lastBuildDate>
         <% items.forEach(function(item) { %>
     <item>
-        <title><%= item.source %> - <%= item.title %></title>
-        <description><![CDATA[<%- item.description %>]]></description>
-        <link><%= item.link %></link>
-        <guid><%= item.link %></guid>
+        <title><![CDATA[<%- item.rssTitle %>]]></title>
+        <description><![CDATA[<%- item.rssDescription %>]]></description>
+        <link><%= item.rssLink %></link>
+        <guid><%= item.rssLink %></guid>
         <pubDate><%= new Date(item.pubDate).toUTCString() %></pubDate>
         <% 
             let creator = null;
@@ -48,10 +48,10 @@
         <% } %>
         <%
             // Add enclosure element for featured image if available
-            if (item.imageUrl) {
+            if (item.rssImageUrl) {
                 // Determine MIME type from URL extension
                 let mimeType = 'image/jpeg'; // default
-                const imageUrl = item.imageUrl.toLowerCase();
+                const imageUrl = item.rssImageUrl.toLowerCase();
                 if (imageUrl.includes('.png')) {
                     mimeType = 'image/png';
                 } else if (imageUrl.includes('.gif')) {
@@ -66,7 +66,7 @@
                     mimeType = 'image/x-icon';
                 }
         %>
-            <enclosure url="<%= item.imageUrl %>" type="<%= mimeType %>" length="0"/>
+            <enclosure url="<%= item.rssImageUrl %>" type="<%= mimeType %>" length="0"/>
         <% } %>
     </item>
     <% }); %>

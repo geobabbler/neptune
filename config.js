@@ -29,6 +29,9 @@ const CONFIG = {
 
   // Cap merged item list per feed (after date prune)
   FEED_MAX_MERGED_ITEMS: parseInt(process.env.FEED_MAX_MERGED_ITEMS || '2000', 10),
+
+  // Canonical public site URL (no trailing slash). Used for RSS channel/self links — must match how /feed is served (e.g. https).
+  PUBLIC_SITE_URL: (process.env.PUBLIC_SITE_URL || 'https://geofeeds.me').replace(/\/+$/, ''),
 };
 
 module.exports = CONFIG;
