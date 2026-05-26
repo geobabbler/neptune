@@ -8,7 +8,7 @@
         <lastBuildDate><%= new Date().toUTCString() %></lastBuildDate>
         <% items.forEach(function(item) { %>
     <item>
-        <title><![CDATA[<%- item.rssTitle %>]]></title>
+        <title><%= item.rssTitle %></title>
         <description><![CDATA[<%- item.rssDescription %>]]></description>
         <link><%= item.rssLink %></link>
         <guid><%= item.rssLink %></guid>

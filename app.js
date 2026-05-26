@@ -383,14 +383,38 @@ function escapeForRssCDATA(s) {
   return String(s || '').replace(/\]\]>/g, ']\u2060]\u2060>');
 }
 
-/** Wrap snippet so validators do not treat leading "--" etc. as a malformed HTML fragment root. */
-function prepareRssDescription(html) {
-  const inner = escapeForRssCDATA(html || '');
-  return `<div xmlns="http://www.w3.org/1999/xhtml">${inner}</div>`;
+/** Bare `&` in HTML snippets breaks feed validators (“Named entity expected”). Leave valid refs like &amp; / &#8212; intact. */
+function escapeInvalidAmpersandsInHtml(html) {
+  return String(html || '').replace(
+    /&(?!(?:#\d{1,7}|#x[\da-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{0,127});)/g,
+    '&amp;'
+  );
 }
 
+function escapeXmlText(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+/** Plain-text RSS titles: HTML-like content confuses interoperability checks; normalize then XML-escape. */
 function prepareRssTitle(source, title) {
-  return escapeForRssCDATA(`${source || ''} - ${title || ''}`);
+  let t = `${source || ''} - ${title || ''}`;
+  try {
+    t = decode(t);
+  } catch {
+    // keep raw t
+  }
+  t = t.replace(/<[^>]*>/g, '');
+  return escapeXmlText(t);
+}
+
+/** Wrap snippet so validators do not treat leading "--" etc. as a malformed HTML fragment root. */
+function prepareRssDescription(html) {
+  const sanitized = escapeInvalidAmpersandsInHtml(html || '');
+  const inner = escapeForRssCDATA(sanitized);
+  return `<div xmlns="http://www.w3.org/1999/xhtml">${inner}</div>`;
 }
 
 // Generate aggregated RSS feed
@@ -466,9 +490,12 @@ app.get('/view', async (req, res) => {
   }
 });
 
-// Endpoint to serve the aggregated RSS feed
+// Endpoint to serve the aggregated RSS feed (canonical URL; query strings redirect for atom:link interoperability)
 app.get('/feed', async (req, res) => {
   try {
+    if (req.originalUrl.includes('?')) {
+      return res.redirect(301, `${CONFIG.PUBLIC_SITE_URL}/feed`);
+    }
 
     const rssFile = path.join(outputDir, 'aggregated.xml');
     if (!fs.existsSync(rssFile)) {
