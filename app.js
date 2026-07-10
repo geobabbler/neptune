@@ -13,7 +13,7 @@ const { decode } = require('html-entities');
 const { marked } = require('marked');
 const CONFIG = require('./config');
 const { getFeedMetadata } = require('./lib/opml');
-const { summarizeText, extractFeedItems, extractImageUrl, extractImageFromHtml, isValidImageUrl, resolveImageUrl } = require('./lib/feeds');
+const { summarizeText, extractFeedItems, extractImageUrl, extractImageFromHtml, isValidImageUrl, resolveImageUrl, enrichItemsMissingImages } = require('./lib/feeds');
 const { fetchAndCacheFeed } = require('./lib/feed-fetch');
 
 // MCP Server imports
@@ -160,6 +160,14 @@ const renderFeeds = async (rssFeed) => {
       }
     }
 
+    const itemLink = item.link ? item.link[0] : null;
+    const description = item.description ? item.description[0] : '';
+
+    // Fallback: description HTML may contain a featured image (older aggregated feeds)
+    if (!imageUrl && description) {
+      imageUrl = extractImageFromHtml(description, itemLink);
+    }
+
     // Determine source:
     // 1. Prefer <source> element from aggregated RSS
     // 2. Fallback to OPML feed title based on link hostname
@@ -268,7 +276,10 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
               });
 
               if (feedInfo && feedInfo.items.length > 0) {
-                // Apply OPML-level default image URL as the last fallback per item
+                // WordPress and similar feeds often omit featured images in RSS; try post page og:image first
+                feedInfo.items = await enrichItemsMissingImages(feedInfo.items);
+
+                // OPML default image is last resort (after RSS + page fetch)
                 if (defaultImageUrl && isValidImageUrl(defaultImageUrl)) {
                   feedInfo.items = feedInfo.items.map((item) => ({
                     ...item,

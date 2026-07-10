@@ -30,6 +30,12 @@ const CONFIG = {
   // Cap merged item list per feed (after date prune)
   FEED_MAX_MERGED_ITEMS: parseInt(process.env.FEED_MAX_MERGED_ITEMS || '2000', 10),
 
+  // Fetch og:image from item link when RSS/Atom omits featured images (common on WordPress excerpt feeds)
+  FEED_PAGE_IMAGE_FETCH: process.env.FEED_PAGE_IMAGE_FETCH !== '0',
+
+  // Max concurrent post-page fetches per feed during aggregation
+  FEED_PAGE_IMAGE_CONCURRENCY: parseInt(process.env.FEED_PAGE_IMAGE_CONCURRENCY || '3', 10),
+
   // Canonical public site URL (no trailing slash). Used for RSS channel/self links — must match how /feed is served (e.g. https).
   PUBLIC_SITE_URL: (process.env.PUBLIC_SITE_URL || 'https://geofeeds.me').replace(/\/+$/, ''),
 };
