@@ -15,6 +15,11 @@ const CONFIG = require('./config');
 const { getFeedMetadata } = require('./lib/opml');
 const { summarizeText, extractFeedItems, extractImageUrl, extractImageFromHtml, isValidImageUrl, resolveImageUrl, enrichItemsMissingImages } = require('./lib/feeds');
 const { fetchAndCacheFeed } = require('./lib/feed-fetch');
+const {
+  writeAggregationState,
+  getUniqueAggregatedItems,
+} = require('./lib/aggregation-state');
+const { buildServiceMetadata } = require('./lib/service-metadata');
 
 // MCP Server imports
 const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
@@ -353,6 +358,13 @@ const aggregateFeeds = async (useCache = true, lastRefreshTime = null) => {
     const outputFile = path.join(outputDir, 'aggregated.html');
     fs.writeFileSync(outputFile, html);
 
+    writeAggregationState(outputDir, {
+      opmlCount: feeds.length,
+      cachedCount: feedMetadataForIndex.length,
+      aggregatedFeeds,
+      monthsBack: CONFIG.FEED_MONTHS_BACK,
+    });
+
     console.log('Aggregation completed successfully.');
   } catch (error) {
     console.error('Error during aggregation:', error);
@@ -430,11 +442,7 @@ function prepareRssDescription(html) {
 
 // Generate aggregated RSS feed
 const generateRSSFeed = async (feeds) => {
-  // Flatten all items and remove duplicates based on link
-  const allItems = feeds.flatMap(feed => feed.items);
-  const uniqueItems = allItems.filter((item, index, self) =>
-    index === self.findIndex((t) => t.link === item.link)
-  );
+  const uniqueItems = getUniqueAggregatedItems(feeds);
 
   // Sort by publication date (newest first)
   uniqueItems.sort((a, b) => {
@@ -721,6 +729,26 @@ app.get('/version', (req, res) => {
     });
 });
 
+const packageJson = require('./package.json');
+
+const getServiceMetadataPayload = async () =>
+  buildServiceMetadata({
+    outputDir,
+    cacheDir,
+    opmlFile: path.join(__dirname, 'feeds.opml'),
+    packageJson,
+    config: CONFIG,
+  });
+
+app.get('/metadata', async (req, res) => {
+  try {
+    res.json(await getServiceMetadataPayload());
+  } catch (error) {
+    console.error('Error serving metadata:', error);
+    res.status(500).json({ error: 'Error serving metadata.' });
+  }
+});
+
 // ============================================================================
 // MCP Server Setup (Streamable HTTP Transport)
 // ============================================================================
@@ -850,6 +878,17 @@ function createNeptuneMcpServer() {
           totalItems: feedInfo.items.length,
           returnedItems: items.length,
         });
+      }
+
+      case 'get_service_metadata': {
+        const metadata = await buildServiceMetadata({
+          outputDir,
+          cacheDir,
+          opmlFile,
+          packageJson,
+          config: CONFIG,
+        });
+        return createMcpTextResponse(metadata);
       }
 
       default:
