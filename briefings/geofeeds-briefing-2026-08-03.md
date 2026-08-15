@@ -1,4 +1,4 @@
-# GeoFeeds Daily Briefing, Monday, August 3, 2026
+# GeoFeeds Daily Briefing — Monday, August 3, 2026
 
 *Covering posts from 0800 ET August 2 to 0800 ET August 3. Sources: 162 feeds.*
 
