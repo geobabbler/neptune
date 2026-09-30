@@ -6,43 +6,43 @@
 
 ## Three Topics That Stood Out
 
-**1. EO's business keeps moving from pixels to payouts**
+**1. Europe's space and geospatial institutions keep stacking capacity**
 
-SIIS and SkyFi announced a partnership putting native 25cm SpaceEye-T optical imagery and tasking on SkyFi's marketplace, opening high-resolution capacity to a global customer base rather than a single buyer, per Spatial Source and Earth Imaging Journal. Separately, EarthDaily struck a new agreement with an unnamed North American property and casualty insurer to run its AI-driven wildfire risk intelligence across high-risk Western US markets.
+Teledyne Space Imaging's CIS111 detector reached orbit aboard the MTG-I2 geostationary weather satellite as part of its Flexible Combined Imager, per Geoconnexion. The same week, ESA awarded PLD Space a €158.9 million contract to develop its next-generation MIURA Next launcher, and EuroGeographics opened a new Observer Membership framework to widen international geospatial cooperation.
 
-*Why this matters:* EO's real money is in the diagnosis, not the picture. EarthDaily's wildfire deal with a major insurer is a rare commercial-vertical win in a discourse that talks endlessly about agriculture and insurance while barely ever landing a named contract with either. Imagery-as-commodity keeps getting confirmed from a different direction.
+*Why this matters:* Europe's sovereignty conversation keeps moving past op-eds into hardware, funding and governance landing in the same week. A weather satellite detector, a launcher contract and a membership framework don't make headlines alone, but together they're evidence of a capacity build-out running on multiple tracks at once.
 
-**2. European space and geospatial institutions keep building capacity**
+**2. EO keeps chasing decision-ready output over raw pixels**
 
-Teledyne Space Imaging's CIS111 detector launched aboard the MTG-I2 geostationary weather satellite as part of its Flexible Combined Imager, per Geoconnexion. The same day, ESA awarded PLD Space a €158.9 million contract to develop its next-generation MIURA Next launcher, and EuroGeographics opened a new Observer Membership framework to widen international geospatial collaboration.
+SIIS and SkyFi struck a partnership putting native 25cm SpaceEye-T optical imagery and tasking directly on SkyFi's marketplace, opening high-resolution capacity to a global customer base instead of a single buyer. EarthDaily's AI-driven wildfire risk intelligence is now running for a North American property and casualty insurer across high-risk Western US markets. And a new voice, Clairvoyint AI, laid out how it's applying neuro-symbolic AI to stranded asset risk, an infrastructure finance question that rarely gets geospatial treatment.
 
-*Why this matters:* Europe's space buildout keeps moving from op-ed to contract, and it's not just launch vehicles and constellations. A meteorological instrument reaching orbit, a launcher contract award, and a widened institutional membership all landed the same week, evidence the sovereignty conversation now spans hardware, funding, and governance at once.
+*Why this matters:* Three companies landed on the same point from different angles: raw imagery is a commodity, the risk assessment built on top of it is where the money is. EarthDaily's insurance deal and Clairvoyint's stranded asset framing are rare glimpses of the demand side the feeds almost never cover.
 
-**3. Practitioners keep solving the unglamorous production problems**
+**3. Practitioners are still doing the unglamorous, unheralded work**
 
-An Earth observation engineer detailed on Medium how redesigning for Spot instance failure, not just choosing Spot pricing, cut EC2 compute costs by roughly 70% on a large parallel processing workload. vGIS published a practitioner explainer on why EPSG codes and State Plane coordinate systems still delay projects moving between surveyors, engineers, and CAD platforms, and Fulcrum described how AI-assisted development now lets environmental consulting firms encode their own field workflows into custom Wildnote extensions without hiring a developer.
+An Earth observation engineer detailed on Medium how redesigning for Spot instance failure, not just choosing Spot pricing, cut EC2 compute costs by roughly 70% on a large parallel processing workload. vGIS published a practitioner explainer on why EPSG codes and State Plane coordinate systems still delay projects moving between surveyors, engineers and CAD platforms. Tonkin+Taylor tested SouthPAN's satellite based positioning correction service in New Zealand and found it slotted into existing survey workflows with fewer operational barriers, and Fulcrum described how AI-assisted development now lets environmental consulting firms build their own Wildnote extensions without hiring a developer.
 
-*Why this matters:* None of this is glamorous, but it's the layer flashy AI demos are eventually built on top of. Spot-instance resilience, coordinate system plumbing, and AI-assisted custom app building are three different practitioners solving the same underlying problem: production geospatial work is unforgiving of shortcuts.
+*Why this matters:* None of this is glamorous, but it's the layer the flashy AI demos eventually get built on top of. Spot instance resilience, coordinate system plumbing, GNSS correction testing and no-code app extensions are four practitioners solving the same underlying problem: production geospatial work punishes shortcuts.
 
 ---
 
 ## Top Five Posts
 
 **1. We Cut EC2 Compute Costs by ~70% — By Designing for Failure, Not Just Choosing Spot** — *Earth Observation on Medium*
-A practitioner walks through cutting Earth observation compute costs by roughly 70% using Terraform, SQS, and interruption-aware EC2 Auto Scaling workers built to survive Spot instance interruptions rather than just chase Spot pricing. It's a concrete architecture writeup, not a vendor pitch, for anyone running large parallel EO processing jobs on a budget.
+A practitioner walks through cutting Earth observation compute costs by roughly 70 percent using Terraform, SQS and interruption-aware EC2 Auto Scaling workers built to survive Spot instance interruptions rather than just chase Spot pricing. It's a concrete architecture writeup, not a vendor pitch, for anyone running large parallel EO processing jobs on a budget.
 → [Read it](https://medium.com/%40sraza0098/we-cut-ec2-compute-costs-by-70-by-designing-for-failure-not-just-choosing-spot-06adee8c888d?source=rss------earth_observation-5)
 
-**2. Coordinate Systems and Why They Still Cause Delays on Design Projects** — *vGIS*
-vGIS breaks down why EPSG codes and State Plane coordinate systems still trip up projects moving data between surveyors, engineers, GIS staff, and CAD platforms. It's a practical explainer on a problem every multi-discipline project eventually hits, not a new feature announcement.
-→ [Read it](https://www.vgis.io/2026/08/31/coordinate-systems-and-why-they-still-cause-delays-on-design-projects/)
+**2. Putting Clairvoyint to Work on Stranded Asset Risk** — *Clairvoyint AI*
+The author walks through applying the Clairvoyint platform's neuro-symbolic AI to stranded asset risk, a spatial finance question about infrastructure that loses value as markets and regulation shift underneath it. It's original analysis on a topic the feeds almost never touch, infrastructure risk from the finance side rather than the mapping side.
+→ [Read it](https://clairvoyintai.substack.com/p/putting-clairvoyint-to-work-on-stranded)
 
 **3. EarthDaily Expands AI-Powered Wildfire Risk Intelligence Across the Western U.S. With North American Insurance Major** — *Earth Imaging Journal*
-EarthDaily details a new agreement with an unnamed North American property and casualty insurer to deploy its AI-driven, satellite-based wildfire risk intelligence across high-risk markets in the Western US. Named insurance-sector customer deals are rare in these feeds, making this one of the few concrete demand-side EO stories to point to.
+EarthDaily details a new agreement with a large North American property and casualty insurance group to deploy its AI-driven, satellite-based wildfire risk intelligence across high-risk Western US markets. Named insurance-sector customer deals are rare in these feeds, making this one of the few concrete demand-side EO stories to point to.
 → [Read it](https://eijournal.com/news/products-2/earthdaily-expands-ai-powered-wildfire-risk-intelligence-across-the-western-u-s-with-north-american-insurance-major)
 
-**4. Annual High-Resolution Global Ambient Population Estimates From 1975 To 2024** — *EarthStuff*
-EarthStuff flags a new open dataset and paper delivering annual, high-resolution global ambient population estimates from 1975 through 2024, tied to the LandScan Mosaic Time Series. It's the kind of dataset release, buried in a DOI link, that's easy to miss and genuinely useful for anyone doing population-weighted spatial analysis.
-→ [Read it](https://earthstuff.substack.com/p/annual-high-resolution-global-ambient)
+**4. Testing SouthPAN in NZ for accuracy and efficiency** — *Spatial Source*
+Tonkin+Taylor put SouthPAN's satellite based positioning correction service through real testing in New Zealand and found it fit into existing survey workflows while cutting operational barriers. It's a rare piece of applied GNSS testing from a working survey firm rather than a vendor claim.
+→ [Read it](https://www.spatialsource.com.au/testing-southpan-for-accuracy-and-efficiency/)
 
 **5. Senegal Répertoire des localités** — *Revolutionary GIS*
 Revolutionary GIS points to an open GitHub dataset cataloging Senegal's localities and settlements alongside 2023 population figures. It's a terse post, but a genuinely usable resource in a region the feed ecosystem otherwise covers thinly.
