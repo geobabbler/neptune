@@ -5,7 +5,7 @@ This project aggregates and processes RSS/Atom feeds listed in an OPML file and 
 ## Project Structure
 - `cache/`: Stores cached feeds in XML format.
 - `output/`: Stores the generated HTML and RSS files.
-- `feeds.opml`: OPML file with feed URLs.
+- `feeds.opml`: OPML file with feed URLs..
 
 ## To Run
 1. Navigate to the project directory:
