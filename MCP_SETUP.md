@@ -144,6 +144,16 @@ http://localhost:8080/mcp
 
 For clients that require the deprecated HTTP+SSE transport:
 
+**End of support: February 14, 2027**, 90 days after the November 16, 2026
+deprecation notice. Migrate to Streamable HTTP at `/mcp`. Every legacy JSON-RPC
+response carries a warning (result `_meta`, readable tool content, or error
+message). The stream also includes a warning comment, and both legacy endpoints
+return deprecation headers. POST acknowledgement/error bodies include the warning.
+Both endpoints remain available through February 14, 2027. Starting February 15,
+2027 at 00:00 UTC, requests to either endpoint automatically return HTTP `410 Gone`
+with a JSON error directing clients to `/mcp`. This cutoff is checked on each
+request and does not require a server restart.
+
 - **GET** `http://localhost:8080/sse` — establish the SSE stream (server → client)
 - **POST** `http://localhost:8080/messages?sessionId=<id>` — send JSON-RPC messages (client → server)
 

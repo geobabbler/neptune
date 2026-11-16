@@ -24,7 +24,7 @@ const { buildServiceMetadata } = require('./lib/service-metadata');
 // MCP Server imports
 const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
 const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/server/streamableHttp.js');
-const { SSEServerTransport } = require('@modelcontextprotocol/sdk/server/sse.js');
+const { DeprecatedSSEServerTransport, legacySseDeprecation } = require('./lib/sse-deprecation');
 const {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -69,6 +69,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Middleware for parsing JSON (needed for MCP messages)
+app.use(legacySseDeprecation);
 app.use(express.json());
 
 // Serve static files from public directory
@@ -1071,7 +1072,7 @@ app.get('/sse', async (req, res) => {
   const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
   sseLog(`GET /sse from ${clientIp}`);
   try {
-    const transport = new SSEServerTransport('/messages', res);
+    const transport = new DeprecatedSSEServerTransport('/messages', res);
     const sessionId = transport.sessionId;
     sseTransports[sessionId] = transport;
 
